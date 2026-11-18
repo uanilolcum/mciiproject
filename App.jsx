@@ -3,7 +3,7 @@ import {
   Play, Square, CheckCircle, BarChart2, Home, Target, Clock, 
   Plus, BookOpen, AlertCircle, Calendar, X, Award, TrendingUp, 
   Filter, Info, ChevronRight, Sparkles, Check, MessageSquare,
-  Edit2, Trash2, RotateCcw
+  Edit2, Trash2, RotateCcw, UserCheck
 } from 'lucide-react';
 
 const INITIAL_GOALS = [
@@ -109,13 +109,64 @@ const INITIAL_SESSIONS = [
 const COLORS = ['#4f46e5', '#ef4444', '#f59e0b', '#10b981'];
 
 export default function App() {
-  const [userName, setUserName] = useState('');
-  const [userGrade, setUserGrade] = useState('');
-  const [onboardingStep, setOnboardingStep] = useState(0); // 0: Tanışma, 1: Rehber, 2: Uygulama
+  // --- KALICI HAFIZA (LOCALSTORAGE) İLE BAŞLATMA ---
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem('mcii_userName') || '';
+  });
+
+  const [userGrade, setUserGrade] = useState(() => {
+    return localStorage.getItem('mcii_userGrade') || '';
+  });
+
+  const [onboardingStep, setOnboardingStep] = useState(() => {
+    const savedStep = localStorage.getItem('mcii_onboardingStep');
+    const savedName = localStorage.getItem('mcii_userName');
+    // Eğer daha önce isim girilip rehber tamamlandıysa direkt 2. adıma (Hedefler sayfasına) geç
+    if (savedStep !== null) return Number(savedStep);
+    return savedName ? 2 : 0;
+  });
+
+  const [goals, setGoals] = useState(() => {
+    try {
+      const savedGoals = localStorage.getItem('mcii_goals');
+      return savedGoals ? JSON.parse(savedGoals) : INITIAL_GOALS;
+    } catch (e) {
+      return INITIAL_GOALS;
+    }
+  });
+
+  const [sessions, setSessions] = useState(() => {
+    try {
+      const savedSessions = localStorage.getItem('mcii_sessions');
+      return savedSessions ? JSON.parse(savedSessions) : INITIAL_SESSIONS;
+    } catch (e) {
+      return INITIAL_SESSIONS;
+    }
+  });
+
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [goals, setGoals] = useState(INITIAL_GOALS);
-  const [sessions, setSessions] = useState(INITIAL_SESSIONS);
   
+  // --- VERİLER DEĞİŞTİKÇE HAFIZAYA KAYDETME ---
+  useEffect(() => {
+    localStorage.setItem('mcii_userName', userName);
+  }, [userName]);
+
+  useEffect(() => {
+    localStorage.setItem('mcii_userGrade', userGrade);
+  }, [userGrade]);
+
+  useEffect(() => {
+    localStorage.setItem('mcii_onboardingStep', String(onboardingStep));
+  }, [onboardingStep]);
+
+  useEffect(() => {
+    localStorage.setItem('mcii_goals', JSON.stringify(goals));
+  }, [goals]);
+
+  useEffect(() => {
+    localStorage.setItem('mcii_sessions', JSON.stringify(sessions));
+  }, [sessions]);
+
   // Kronometre ve Seans State'leri
   const [activeGoal, setActiveGoal] = useState(null);
   const [sessionSubject, setSessionSubject] = useState('');
@@ -129,11 +180,13 @@ export default function App() {
     'Diğer': 0
   });
   const [activeObstacle, setActiveObstacle] = useState(null); 
+  const [uiMessage, setUiMessage] = useState('');
   
   // Seans Sonu Değerlendirme Modalı State'leri
   const [showEndModal, setShowEndModal] = useState(false);
   const [sessionRating, setSessionRating] = useState(8);
   const [sessionNotes, setSessionNotes] = useState('');
+
   // Yeni Hedef Ekleme ve Düzenleme State'leri
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState(null);
@@ -171,10 +224,16 @@ export default function App() {
     return `${m}:${s}`;
   };
 
+  const getTodayDateString = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
   const getDaysRemaining = (deadlineDate) => {
     if (!deadlineDate) return null;
-    const today = new Date('2026-11-17');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const deadline = new Date(deadlineDate);
+    deadline.setHours(0, 0, 0, 0);
     const diffTime = deadline - today;
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
@@ -251,7 +310,7 @@ export default function App() {
       id: 's' + Date.now(),
       goalId: activeGoal.id,
       subject: sessionSubject,
-      date: '2026-11-17',
+      date: getTodayDateString(),
       startTime: now.toTimeString().slice(0, 5),
       plannedMin: Number(plannedTime) || 30,
       actualMin: actualMinutes,
@@ -391,19 +450,26 @@ export default function App() {
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500 font-medium mt-0.5">Hedeflerini güncelle veya yeni bir çalışma seansı başlat.</p>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">Verilerin cihazına otomatik kaydediliyor.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
+          <button 
+            onClick={() => setOnboardingStep(0)} 
+            title="İsim / Profil Düzenle"
+            className="p-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl shadow-sm hover:bg-slate-100"
+          >
+            <UserCheck className="w-5 h-5" />
+          </button>
           <button 
             onClick={() => setShowGuideModal(true)} 
             title="Nasıl Kullanılır?"
-            className="p-3 bg-white text-slate-600 border border-slate-200 rounded-xl shadow-sm hover:bg-slate-100"
+            className="p-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl shadow-sm hover:bg-slate-100"
           >
             <Info className="w-5 h-5" />
           </button>
           <button 
             onClick={openNewGoalForm} 
-            className="p-3 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-transform active:scale-95"
+            className="p-2.5 bg-indigo-600 text-white rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-transform active:scale-95"
           >
             <Plus className="w-5 h-5" />
           </button>
@@ -414,7 +480,7 @@ export default function App() {
       {!showAddGoal && goals.length > 0 && (
         <div className="flex justify-between items-center bg-indigo-50/70 border border-indigo-100 px-3.5 py-2 rounded-2xl mb-4">
           <span className="text-[11px] font-semibold text-indigo-800">
-            Hazır hedefleri kalem ikonundan düzenleyebilir veya silebilirsin.
+            Hedefleri kalem ikonundan düzenleyebilir veya silebilirsin.
           </span>
           <button
             onClick={() => {
@@ -595,7 +661,7 @@ export default function App() {
                     ...newGoal,
                     id: 'g' + Date.now(),
                     isCompleted: false,
-                    createdAt: '2026-11-17',
+                    createdAt: getTodayDateString(),
                     obstacles: formattedObstacles
                   };
                   setGoals([finalGoal, ...goals]);
@@ -691,6 +757,7 @@ export default function App() {
                     <button 
                       onClick={() => {
                         setActiveGoal(goal);
+                        setUiMessage('');
                         setActiveTab('timer');
                       }}
                       className="px-3 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm hover:bg-indigo-700"
@@ -1003,7 +1070,7 @@ export default function App() {
 
   // --- GELİŞMİŞ RAPORLAR VE HAFTALIK ÖNERİ MOTORU ---
   const getFilteredSessions = () => {
-    const today = new Date('2026-11-17');
+    const today = new Date();
     return sessions.filter(s => {
       const goalMatch = selectedReportGoalId === 'all' || s.goalId === selectedReportGoalId;
       if (!goalMatch) return false;
@@ -1386,6 +1453,7 @@ export default function App() {
               <p><strong>1. Hedef ve Süre Belirleme:</strong> Hedef kartlarında başlangıç ve hedef puanını, bitiş tarihini ve "Eğer-O Zaman" planlarını oluşturabilirsin.</p>
               <p><strong>2. Çalışma Seansı:</strong> Seansa başlarken süreyi manuel girersin. Dersten her koptuğunda ilgili çetele butonuna basarsın; kronometre durur ve çözüm planın ekrana gelir.</p>
               <p><strong>3. Analiz ve Raporlar:</strong> Her hedefin kendi ilerleme yüzdesini, hangi derste ve hangi saatte dikkat kaybı yaşadığını ve haftalık koç önerilerini takip edebilirsin.</p>
+              <p><strong>4. Kalıcı Kayıt:</strong> Yaptığın tüm değişiklikler ve çalışma seansları otomatik olarak telefonunun hafızasına kaydedilir.</p>
             </div>
             <button 
               onClick={() => setShowGuideModal(false)}
@@ -1409,7 +1477,10 @@ export default function App() {
           </button>
           
           <button 
-            onClick={() => setActiveTab('timer')} 
+            onClick={() => {
+              setUiMessage('');
+              setActiveTab('timer');
+            }} 
             className="flex flex-col items-center justify-center w-16 h-16 bg-indigo-600 rounded-full shadow-lg shadow-indigo-200 text-white -mt-8 transform transition-transform active:scale-95 hover:bg-indigo-700 border-4 border-slate-50"
           >
             <Play className="w-7 h-7 fill-current ml-0.5" />
