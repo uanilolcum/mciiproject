@@ -342,11 +342,11 @@ export default function App() {
           
           <div className="space-y-4 text-left mb-8">
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Adın veya Hitap Şeklin</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">RUMUZUN / TAKMA ADIN</label>
               <input 
                 type="text" 
                 className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all text-sm font-medium"
-                placeholder="Örn: Ahmet, Zeynep..."
+                placeholder="Örn: Odak01, Yıldız, Ö1..."
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
@@ -356,7 +356,7 @@ export default function App() {
               <input 
                 type="text" 
                 className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all text-sm font-medium"
-                placeholder="Örn: 11. Sınıf Sayısal / YKS / Olimpiyat"
+                placeholder="Örn: Sayısal / YKS / Olimpiyat"
                 value={userGrade}
                 onChange={(e) => setUserGrade(e.target.value)}
               />
