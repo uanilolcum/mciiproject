@@ -6,14 +6,53 @@ import {
   Edit2, Trash2, RotateCcw, UserCheck
 } from 'lucide-react';
 
+const DISTRACTION_CATEGORIES = [
+  {
+    key: 'Telefon/Bildirim',
+    ifPlaceholder: 'Örn: Telefon ekranı aydınlanıp bildirim düşerse...',
+    thenPlaceholder: 'Örn: Telefonu yüzüstü çevirip Rahatsız Etme moduna alacağım.'
+  },
+  {
+    key: 'Hayal Kurma',
+    ifPlaceholder: 'Örn: Okuduğum konudan kopup zihnim başka yere kayarsa...',
+    thenPlaceholder: 'Örn: Gözlerimi ilk kelimeye sabitleyip kalemle satır takibi yapacağım.'
+  },
+  {
+    key: 'Görev Değiştirme',
+    ifPlaceholder: 'Örn: Çalıştığım dersten sıkılıp başka derse geçmek istersem...',
+    thenPlaceholder: 'Örn: Mevcut konuda 10 dakika daha kalıp o bloğu tamamlayacağım.'
+  },
+  {
+    key: 'Diğer',
+    ifPlaceholder: 'Örn: Dış ses, yorgunluk veya kaygı dikkatimi bölerse...',
+    thenPlaceholder: 'Örn: Kulaklık takacak ya da su içip yalnızca önümdeki soruya odaklanacağım.'
+  }
+];
+
+const EMPTY_DISTRACTIONS = {
+  'Telefon/Bildirim': 0,
+  'Hayal Kurma': 0,
+  'Görev Değiştirme': 0,
+  'Diğer': 0
+};
+
+const createEmptyObstaclePlans = () =>
+  DISTRACTION_CATEGORIES.map(cat => ({
+    category: cat.key,
+    ifText: '',
+    thenText: ''
+  }));
+
 const INITIAL_GOALS = [
   {
     id: 'g1',
     title: 'Matematik Notumu 85\'e Çıkarmak',
     bestOutcome: 'Dönem sonunda takdir belgesi almak, ailemi gururlandırmak ve sınav stresimi azaltmak.',
     obstacles: [
-      { id: 'o1', if: 'Telefonumdan bildirim sesi gelirse ve bakmak istersem', then: 'Telefonumu çalışma süresince uçak moduna alıp başka odaya koyacağım.' },
-      { id: 'o2', if: 'Zor bir soruda takılıp sıkılırsam', then: 'Soruyu işaretleyip 3 derin nefes alarak bir sonraki soruya geçeceğim.' }
+      { id: 'o1', category: 'Telefon/Bildirim', if: 'Telefonumdan bildirim sesi gelirse ve bakmak istersem', then: 'Telefonumu çalışma süresince uçak moduna alıp başka odaya koyacağım.' },
+      { id: 'o2', category: 'Hayal Kurma', if: 'Çözdüğüm sorudan kopup zihnim başka düşüncelere kayarsa', then: 'Kalem ucuyla soruyu baştan yavaşça okuyup dikkatimi toplayacağım.' },
+      { id: 'o3', category: 'Görev Değiştirme', if: 'Zor bir soruda takılıp başka bir derse geçmek istersem', then: 'Soruyu işaretleyip 3 derin nefes alarak aynı konunun bir sonraki sorusuna geçeceğim.' },
+      { id: 'o4', category: 'Diğer', if: 'Yorgunluk veya dış ses nedeniyle odaklanmam düşerse', then: 'Kısa bir nefes alıp su içecek ve masaya dönerek seansı tamamlayacağım.' }
     ],
     metric: 'Puan',
     startValue: 65,
@@ -28,7 +67,10 @@ const INITIAL_GOALS = [
     title: 'Tales Fen Bilimleri Olimpiyatı Hazırlığı',
     bestOutcome: 'Ulusal finale kalmak ve bilimsel proje yetkinliğimi kanıtlamak.',
     obstacles: [
-      { id: 'o3', if: 'Okuldan eve çok yorgun gelirsem', then: '20 dakika dinlenip alarm kuracağım, alarm çalınca masaya geçeceğim.' }
+      { id: 'o5', category: 'Telefon/Bildirim', if: 'Sosyal medya bildirimi gelip elime telefonu alırsam', then: 'Uygulamayı kapatıp telefonu çantamın içine koyacağım.' },
+      { id: 'o6', category: 'Hayal Kurma', if: 'Uzun sorularda dalgınlığa kapılırsam', then: 'Önemli ifadelerin altını çizerek soruyu yeniden okuyacağım.' },
+      { id: 'o7', category: 'Görev Değiştirme', if: 'Olimpiyat sorularından sıkılıp kolay testlere geçmek istersem', then: 'Mevcut testte en az 5 soru daha çözmeden konuyu değiştirmeyeceğim.' },
+      { id: 'o8', category: 'Diğer', if: 'Okuldan eve çok yorgun gelirsem', then: '20 dakika dinlenip alarm kuracağım, alarm çalınca masaya geçeceğim.' }
     ],
     metric: 'Soru',
     startValue: 0,
@@ -43,7 +85,10 @@ const INITIAL_GOALS = [
     title: 'AP Fizik 1 Deneme Çözümleri',
     bestOutcome: 'Tüm konuları eksiksiz tamamlayıp sınavdan 5 tam puan almak.',
     obstacles: [
-      { id: 'o4', if: 'Çalışırken hayal kurmaya başlarsam', then: 'Yüzümü yıkayıp kronometreyi yeniden başlatacağım.' }
+      { id: 'o9', category: 'Telefon/Bildirim', if: 'Deneme çözerken telefonumun ekranı yanarsa', then: 'Ekrana bakmadan telefonu sessize alıp uzaklaştıracağım.' },
+      { id: 'o10', category: 'Hayal Kurma', if: 'Çalışırken hayal kurmaya başlarsam', then: 'Dik oturuşumu düzeltip 2 derin nefes alarak soruya döneceğim.' },
+      { id: 'o11', category: 'Görev Değiştirme', if: 'Denemenin ortasında not düzenleme gibi yan işlere kayarsam', then: 'Yan işi bırakıp elimdeki denemenin kalan sorularını bitireceğim.' },
+      { id: 'o12', category: 'Diğer', if: 'Süre yetmeyecek kaygısı yaşarsam', then: 'Saate bakmayı bırakıp yalnızca önümdeki tek soruya odaklanacağım.' }
     ],
     metric: 'Deneme',
     startValue: 0,
@@ -121,7 +166,6 @@ export default function App() {
   const [onboardingStep, setOnboardingStep] = useState(() => {
     const savedStep = localStorage.getItem('mcii_onboardingStep');
     const savedName = localStorage.getItem('mcii_userName');
-    // Eğer daha önce isim girilip rehber tamamlandıysa direkt 2. adıma (Hedefler sayfasına) geç
     if (savedStep !== null) return Number(savedStep);
     return savedName ? 2 : 0;
   });
@@ -173,12 +217,7 @@ export default function App() {
   const [plannedTime, setPlannedTime] = useState(45);
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0); 
-  const [currentDistractions, setCurrentDistractions] = useState({
-    'Telefon/Bildirim': 0,
-    'Hayal Kurma': 0,
-    'Görev Değiştirme': 0,
-    'Diğer': 0
-  });
+  const [currentDistractions, setCurrentDistractions] = useState({ ...EMPTY_DISTRACTIONS });
   const [activeObstacle, setActiveObstacle] = useState(null); 
   const [uiMessage, setUiMessage] = useState('');
   
@@ -200,12 +239,21 @@ export default function App() {
     targetValue: 100,
     deadline: '2026-12-31'
   });
-  const [newObstacles, setNewObstacles] = useState([{ ifText: '', thenText: '' }]);
+  const [newObstacles, setNewObstacles] = useState(createEmptyObstaclePlans());
 
   // Rapor Filtreleri
   const [selectedReportGoalId, setSelectedReportGoalId] = useState('all');
-  const [selectedTimeRange, setSelectedTimeRange] = useState('all'); // 'week', 'month', 'all'
+  const [selectedTimeRange, setSelectedTimeRange] = useState('all');
   const [showGuideModal, setShowGuideModal] = useState(false);
+
+  // Her yeni seans veya hedef değişiminde kopmaları ve kronometreyi sıfırla
+  const resetSessionState = () => {
+    setIsRunning(false);
+    setElapsedTime(0);
+    setCurrentDistractions({ ...EMPTY_DISTRACTIONS });
+    setActiveObstacle(null);
+    setShowEndModal(false);
+  };
 
   // Zamanlayıcı
   useEffect(() => {
@@ -256,7 +304,7 @@ export default function App() {
       targetValue: 100,
       deadline: '2026-12-31'
     });
-    setNewObstacles([{ ifText: '', thenText: '' }]);
+    setNewObstacles(createEmptyObstaclePlans());
     setShowAddGoal(true);
   };
 
@@ -271,11 +319,20 @@ export default function App() {
       targetValue: goal.targetValue,
       deadline: goal.deadline
     });
-    setNewObstacles(
-      goal.obstacles && goal.obstacles.length > 0
-        ? goal.obstacles.map(o => ({ ifText: o.if, thenText: o.then }))
-        : [{ ifText: '', thenText: '' }]
-    );
+    const mappedObstacles = DISTRACTION_CATEGORIES.map((cat, idx) => {
+      const matched = (goal.obstacles || []).find(o => o.category === cat.key);
+      if (matched) {
+        return { category: cat.key, ifText: matched.if || '', thenText: matched.then || '' };
+      }
+      // Eski formatta (kategorisiz) kayıt varsa ilk sıradakileri koru
+      const legacy = (goal.obstacles || []).filter(o => !o.category)[idx];
+      return {
+        category: cat.key,
+        ifText: legacy ? legacy.if || '' : '',
+        thenText: legacy ? legacy.then || '' : ''
+      };
+    });
+    setNewObstacles(mappedObstacles);
     setShowAddGoal(true);
   };
 
@@ -286,6 +343,7 @@ export default function App() {
     setSessions(prev => prev.filter(s => s.goalId !== deletedId));
     if (activeGoal && activeGoal.id === deletedId) {
       setActiveGoal(null);
+      resetSessionState();
     }
     if (selectedReportGoalId === deletedId) {
       setSelectedReportGoalId('all');
@@ -297,9 +355,18 @@ export default function App() {
     if (!isRunning) return;
     setIsRunning(false);
     setCurrentDistractions(prev => ({ ...prev, [type]: prev[type] + 1 }));
-    if (activeGoal && activeGoal.obstacles && activeGoal.obstacles.length > 0) {
-      const randomObstacle = activeGoal.obstacles[Math.floor(Math.random() * activeGoal.obstacles.length)];
-      setActiveObstacle(randomObstacle);
+
+    const obstacles = (activeGoal && activeGoal.obstacles) ? activeGoal.obstacles : [];
+    const matchedPlan = obstacles.find(o => o.category === type && o.if && o.then);
+
+    if (matchedPlan) {
+      setActiveObstacle({ ...matchedPlan, category: type });
+    } else {
+      setActiveObstacle({
+        category: type,
+        if: `"${type}" nedeniyle dersten koparsam`,
+        then: 'Derin bir nefes alıp dikkat dağıtıcıyı uzaklaştıracak ve mevcut görevime geri döneceğim.'
+      });
     }
   };
 
@@ -319,11 +386,10 @@ export default function App() {
       distractions: { ...currentDistractions }
     };
     setSessions(prev => [...prev, newSession]);
-    setShowEndModal(false);
+    resetSessionState();
     setActiveGoal(null);
     setSessionSubject('');
     setSessionNotes('');
-    setElapsedTime(0);
     setActiveTab('reports');
   };
 
@@ -352,7 +418,7 @@ export default function App() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">Sınıfın / Hedef Alanın (İsteğe Bağlı)</label>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">HEDEF ALANIN (İSTEĞE BAĞLI)</label>
               <input 
                 type="text" 
                 className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all text-sm font-medium"
@@ -400,7 +466,7 @@ export default function App() {
               <div>
                 <h3 className="font-bold text-slate-800 text-sm mb-1">MCII ile Sayısal Hedef ve Süre Belirle</h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Sadece "ders çalışacağım" demek yerine; başlangıç puanını, hedef puanını (örn. 70'ten 85'e) ve <strong>bitiş tarihini</strong> gir. Seni durdurabilecek engeller için <em>"Eğer şu olursa, O zaman bunu yapacağım"</em> planları kur.
+                  Sadece "ders çalışacağım" demek yerine; başlangıç puanını, hedef puanını (örn. 70'ten 85'e) ve <strong>bitiş tarihini</strong> gir. Her dikkat dağıtıcı türü için ayrı <em>"Eğer şu olursa, O zaman bunu yapacağım"</em> planları kur.
                 </p>
               </div>
             </div>
@@ -410,7 +476,7 @@ export default function App() {
               <div>
                 <h3 className="font-bold text-slate-800 text-sm mb-1">Akıllı Kronometre ve Çetele Tutma</h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Seansa başla. Çalışırken telefon, hayal kurma veya görev değiştirme gibi bir nedenle dersten koparsan ilgili butona bas. Kronometre anında durur ve sana kendi yazdığın <strong>Eğer-O Zaman</strong> çözümünü hatırlatır!
+                  Seansa başla. Çalışırken telefon, hayal kurma, görev değiştirme veya diğer bir nedenle dersten koparsan ilgili butona bas. Kronometre anında durur ve sana tam o kategoriye özel <strong>Eğer-O Zaman</strong> çözümünü hatırlatır!
                 </p>
               </div>
             </div>
@@ -455,7 +521,7 @@ export default function App() {
         <div className="flex items-center gap-1.5">
           <button 
             onClick={() => setOnboardingStep(0)} 
-            title="İsim / Profil Düzenle"
+            title="Rumuz / Profil Düzenle"
             className="p-2.5 bg-white text-slate-600 border border-slate-200 rounded-xl shadow-sm hover:bg-slate-100"
           >
             <UserCheck className="w-5 h-5" />
@@ -487,6 +553,7 @@ export default function App() {
               setGoals([]);
               setSessions([]);
               setActiveGoal(null);
+              resetSessionState();
               setSelectedReportGoalId('all');
             }}
             className="text-[11px] font-extrabold text-red-600 hover:text-red-700 flex items-center gap-1 shrink-0 ml-2"
@@ -505,7 +572,7 @@ export default function App() {
                 {editingGoalId ? 'Hedefi ve MCII Planını Düzenle' : 'MCII Hedef Planlama Formu'}
               </h3>
               <p className="text-xs text-slate-400">
-                {editingGoalId ? 'Hedef bilgilerini veya Eğer-O Zaman planlarını güncelle.' : 'Somut, ölçülebilir ve zamana bağlı bir hedef oluştur.'}
+                {editingGoalId ? 'Hedef bilgilerini veya kategoriye özel Eğer-O Zaman planlarını güncelle.' : 'Somut, ölçülebilir ve zamana bağlı bir hedef oluştur.'}
               </p>
             </div>
             <button onClick={() => { setShowAddGoal(false); setEditingGoalId(null); }} className="p-1.5 rounded-lg hover:bg-slate-100">
@@ -518,7 +585,7 @@ export default function App() {
               <label className="text-xs font-bold text-slate-600 mb-1 block">ADIM 1: SOMUT HEDEFİN NEDİR?</label>
               <input 
                 type="text" 
-                placeholder="Örn: Matematik notumu dönem sonunda 70'ten 85'e çıkarmak" 
+                placeholder="Örn: Matematikte 3 haftada 300 soru çözmek" 
                 className="w-full p-3 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none focus:border-indigo-500" 
                 value={newGoal.title} 
                 onChange={e => setNewGoal({...newGoal, title: e.target.value})} 
@@ -547,6 +614,8 @@ export default function App() {
                   <option value="Sayfa">Okunan Sayfa</option>
                   <option value="Deneme">Deneme Sayısı</option>
                   <option value="Saat">Çalışma Saati</option>
+                  <option value="Konu">Tamamlanan Konu</option>
+                  <option value="Kelime">Öğrenilen Kelime</option>
                 </select>
               </div>
             </div>
@@ -593,54 +662,52 @@ export default function App() {
             </div>
 
             <div className="pt-3 border-t border-slate-100">
-              <label className="text-xs font-bold text-slate-600 block mb-2">ADIM 3 & 4: ENGELLER VE "EĞER... O ZAMAN..." PLANLARI</label>
-              {newObstacles.map((obs, idx) => (
-                <div key={idx} className="space-y-2 mb-3 bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/70 relative">
-                  {newObstacles.length > 1 && (
-                    <button
-                      onClick={() => setNewObstacles(newObstacles.filter((_, i) => i !== idx))}
-                      className="absolute top-2.5 right-2.5 text-slate-400 hover:text-red-500"
-                      title="Bu Engeli Sil"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  )}
-                  <div className="flex items-center gap-2 pr-5">
-                    <span className="text-[11px] font-extrabold text-amber-800 bg-amber-200 px-2 py-0.5 rounded">EĞER (Engel)</span>
-                    <input 
-                      type="text" 
-                      placeholder="Örn: Telefon bildirimleri dikkatimi dağıtırsa..." 
-                      className="flex-1 p-2 rounded-lg text-xs outline-none border border-amber-200 bg-white" 
-                      value={obs.ifText} 
-                      onChange={e => {
-                        const updated = [...newObstacles];
-                        updated[idx].ifText = e.target.value;
-                        setNewObstacles(updated);
-                      }}
-                    />
+              <label className="text-xs font-bold text-slate-600 block mb-1">
+                ADIM 3 & 4: DİKKAT KESİNTİSİ TÜRLERİNE GÖRE "EĞER... O ZAMAN..." PLANLARI
+              </label>
+              <p className="text-[11px] text-slate-400 mb-3">
+                Çalışma sırasında hangi dikkat dağıtıcıya basarsan, aşağıda o başlık için yazdığın plan ekrana gelecektir.
+              </p>
+              {newObstacles.map((obs, idx) => {
+                const catMeta = DISTRACTION_CATEGORIES[idx] || DISTRACTION_CATEGORIES[3];
+                return (
+                  <div key={obs.category} className="space-y-2 mb-3 bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/70">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold text-indigo-800 bg-indigo-100 px-2.5 py-0.5 rounded-lg">
+                        {obs.category}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-extrabold text-amber-800 bg-amber-200 px-2 py-0.5 rounded shrink-0">EĞER</span>
+                      <input 
+                        type="text" 
+                        placeholder={catMeta.ifPlaceholder} 
+                        className="flex-1 p-2 rounded-lg text-xs outline-none border border-amber-200 bg-white" 
+                        value={obs.ifText} 
+                        onChange={e => {
+                          const updated = [...newObstacles];
+                          updated[idx] = { ...updated[idx], ifText: e.target.value };
+                          setNewObstacles(updated);
+                        }}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded shrink-0">O ZAMAN</span>
+                      <input 
+                        type="text" 
+                        placeholder={catMeta.thenPlaceholder} 
+                        className="flex-1 p-2 rounded-lg text-xs outline-none border border-emerald-200 bg-white" 
+                        value={obs.thenText} 
+                        onChange={e => {
+                          const updated = [...newObstacles];
+                          updated[idx] = { ...updated[idx], thenText: e.target.value };
+                          setNewObstacles(updated);
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded">O ZAMAN (Çözüm)</span>
-                    <input 
-                      type="text" 
-                      placeholder="Örn: Telefonu sessize alıp başka odaya koyacağım." 
-                      className="flex-1 p-2 rounded-lg text-xs outline-none border border-emerald-200 bg-white" 
-                      value={obs.thenText} 
-                      onChange={e => {
-                        const updated = [...newObstacles];
-                        updated[idx].thenText = e.target.value;
-                        setNewObstacles(updated);
-                      }}
-                    />
-                  </div>
-                </div>
-              ))}
-              <button 
-                onClick={() => setNewObstacles([...newObstacles, { ifText: '', thenText: '' }])} 
-                className="text-xs text-indigo-600 font-bold hover:text-indigo-700"
-              >
-                + Başka Bir Engel ve Çözüm Planı Ekle
-              </button>
+                );
+              })}
             </div>
 
             <button 
@@ -648,7 +715,12 @@ export default function App() {
                 if (!newGoal.title.trim()) return;
                 const formattedObstacles = newObstacles
                   .filter(o => o.ifText.trim() && o.thenText.trim())
-                  .map((o, i) => ({ id: 'o' + Date.now() + i, if: o.ifText, then: o.thenText }));
+                  .map((o, i) => ({
+                    id: 'o' + Date.now() + i,
+                    category: o.category,
+                    if: o.ifText.trim(),
+                    then: o.thenText.trim()
+                  }));
 
                 if (editingGoalId) {
                   setGoals(goals.map(g => g.id === editingGoalId ? {
@@ -656,6 +728,9 @@ export default function App() {
                     ...newGoal,
                     obstacles: formattedObstacles
                   } : g));
+                  if (activeGoal && activeGoal.id === editingGoalId) {
+                    setActiveGoal(prev => ({ ...prev, ...newGoal, obstacles: formattedObstacles }));
+                  }
                 } else {
                   const finalGoal = {
                     ...newGoal,
@@ -670,7 +745,7 @@ export default function App() {
                 setShowAddGoal(false);
                 setEditingGoalId(null);
                 setNewGoal({ title: '', bestOutcome: '', metric: 'Puan', startValue: 0, currentValue: 0, targetValue: 100, deadline: '2026-12-31' });
-                setNewObstacles([{ ifText: '', thenText: '' }]);
+                setNewObstacles(createEmptyObstaclePlans());
               }} 
               className="w-full py-4 rounded-xl font-bold text-white bg-indigo-600 mt-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700"
             >
@@ -756,7 +831,9 @@ export default function App() {
                     </button>
                     <button 
                       onClick={() => {
+                        resetSessionState();
                         setActiveGoal(goal);
+                        setSessionSubject('');
                         setUiMessage('');
                         setActiveTab('timer');
                       }}
@@ -808,10 +885,15 @@ export default function App() {
                   </div>
                   {goal.obstacles && goal.obstacles.length > 0 && (
                     <div className="bg-amber-50/60 p-2.5 rounded-xl border border-amber-100">
-                      <p className="text-[11px] font-bold text-amber-800 mb-1">MCII "Eğer - O Zaman" Planların:</p>
+                      <p className="text-[11px] font-bold text-amber-800 mb-1.5">MCII "Eğer - O Zaman" Planların:</p>
                       {goal.obstacles.map((obs) => (
-                        <p key={obs.id} className="text-xs text-slate-600 leading-snug mb-1 last:mb-0">
-                          • <strong>Eğer</strong> {obs.if} → <strong>O Zaman</strong> {obs.then}
+                        <p key={obs.id} className="text-xs text-slate-600 leading-snug mb-1.5 last:mb-0">
+                          {obs.category && (
+                            <span className="inline-block text-[10px] font-extrabold text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded mr-1.5">
+                              {obs.category}
+                            </span>
+                          )}
+                          <strong>Eğer</strong> {obs.if} → <strong>O Zaman</strong> {obs.then}
                         </p>
                       ))}
                     </div>
@@ -865,7 +947,10 @@ export default function App() {
                 <select 
                   className="w-full p-3.5 rounded-xl border border-slate-200 bg-slate-50 outline-none focus:border-indigo-500 text-sm font-medium"
                   value={activeGoal ? activeGoal.id : ''}
-                  onChange={(e) => setActiveGoal(goals.find(g => g.id === e.target.value))}
+                  onChange={(e) => {
+                    resetSessionState();
+                    setActiveGoal(goals.find(g => g.id === e.target.value));
+                  }}
                 >
                   <option value="" disabled>Hedef seçiniz...</option>
                   {goals.map(g => <option key={g.id} value={g.id}>{g.title}</option>)}
@@ -914,8 +999,7 @@ export default function App() {
                     return;
                   }
                   setUiMessage('');
-                  setElapsedTime(0);
-                  setCurrentDistractions({ 'Telefon/Bildirim': 0, 'Hayal Kurma': 0, 'Görev Değiştirme': 0, 'Diğer': 0 });
+                  resetSessionState();
                   setIsRunning(true);
                 }}
                 className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 mt-2 flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors"
@@ -950,7 +1034,14 @@ export default function App() {
             <div className="flex items-start gap-3">
               <AlertCircle className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <p className="text-amber-300 text-xs font-extrabold uppercase tracking-wider mb-1">Dikkatin Dağıldı! MCII Planını Uygula:</p>
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <p className="text-amber-300 text-xs font-extrabold uppercase tracking-wider">Dikkatin Dağıldı! MCII Planını Uygula</p>
+                  {activeObstacle.category && (
+                    <span className="text-[10px] font-extrabold bg-amber-400/20 text-amber-200 px-2 py-0.5 rounded-full border border-amber-400/30">
+                      {activeObstacle.category}
+                    </span>
+                  )}
+                </div>
                 <p className="text-white text-xs mb-1"><strong className="text-amber-400">EĞER:</strong> {activeObstacle.if}</p>
                 <p className="text-white text-xs font-bold"><strong className="text-emerald-400">O ZAMAN:</strong> {activeObstacle.then}</p>
               </div>
@@ -1152,7 +1243,6 @@ export default function App() {
       ? null 
       : goals.find(g => g.id === selectedReportGoalId);
 
-    // 1. Sayısal Hedefe Ulaşma Oranı Hesabı
     const relevantGoals = selectedGoalObj ? [selectedGoalObj] : goals;
     const avgGoalAttainment = relevantGoals.length > 0
       ? Math.round(
@@ -1160,17 +1250,14 @@ export default function App() {
         )
       : 0;
 
-    // 2. Süre Verimliliği (Gerçekleşen / Planlanan)
     const totalPlanned = filteredSessions.reduce((acc, s) => acc + s.plannedMin, 0);
     const totalActual = filteredSessions.reduce((acc, s) => acc + s.actualMin, 0);
     const timeEfficiency = totalPlanned > 0 ? Math.round((totalActual / totalPlanned) * 100) : 0;
 
-    // 3. Verimli Çalışma Oranı (Ortalama Özdeğerlendirme Puanı % karşılığı)
     const avgRatingPercent = filteredSessions.length > 0
       ? Math.round((filteredSessions.reduce((acc, s) => acc + s.rating, 0) / (filteredSessions.length * 10)) * 100)
       : 0;
 
-    // Ders Bazlı Kopma ve Baskın Çeldirici Analizi
     const subjectAnalysis = {};
     filteredSessions.forEach(s => {
       if (!subjectAnalysis[s.subject]) {
@@ -1184,7 +1271,6 @@ export default function App() {
 
     const maxSubjectDistraction = Math.max(1, ...Object.values(subjectAnalysis).map(d => d.total));
 
-    // Günün Saatlerine Göre Odak Kaybı Analizi
     const timeSlotStats = {
       'Sabah (06-12)': { distractions: 0, sessions: 0, ratingSum: 0 },
       'Öğle (12-18)': { distractions: 0, sessions: 0, ratingSum: 0 },
@@ -1201,7 +1287,6 @@ export default function App() {
       timeSlotStats[slot].ratingSum += s.rating;
     });
 
-    // Genel Çeldirici Dağılımı
     const totalDistractionsMap = filteredSessions.reduce((acc, session) => {
       Object.entries(session.distractions).forEach(([key, val]) => {
         acc[key] = (acc[key] || 0) + val;
@@ -1217,7 +1302,7 @@ export default function App() {
           <p className="text-xs text-slate-500 font-medium">Her hedef için ayrı veya haftalık/aylık performansını incele.</p>
         </div>
 
-        {/* FİLTRELEME ÇUBUĞU (HEDEF SEÇİMİ & ZAMAN ARALIĞI) */}
+        {/* FİLTRELEME ÇUBUĞU */}
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
           <div>
             <label className="text-[11px] font-bold text-slate-500 uppercase flex items-center gap-1 mb-1.5">
@@ -1450,10 +1535,10 @@ export default function App() {
               <button onClick={() => setShowGuideModal(false)}><X className="w-5 h-5 text-slate-400" /></button>
             </div>
             <div className="space-y-3 text-xs text-slate-600 leading-relaxed mb-5">
-              <p><strong>1. Hedef ve Süre Belirleme:</strong> Hedef kartlarında başlangıç ve hedef puanını, bitiş tarihini ve "Eğer-O Zaman" planlarını oluşturabilirsin.</p>
-              <p><strong>2. Çalışma Seansı:</strong> Seansa başlarken süreyi manuel girersin. Dersten her koptuğunda ilgili çetele butonuna basarsın; kronometre durur ve çözüm planın ekrana gelir.</p>
+              <p><strong>1. Hedef ve Süre Belirleme:</strong> Hedef kartlarında başlangıç ve hedef değerini, bitiş tarihini ve 4 dikkat kesintisi türü için ayrı "Eğer-O Zaman" planlarını oluşturabilirsin.</p>
+              <p><strong>2. Çalışma Seansı:</strong> Seansa başlarken süreyi manuel girersin. Dersten her koptuğunda ilgili çetele butonuna basarsın; kronometre durur ve tam o kategoriye özel çözüm planın ekrana gelir.</p>
               <p><strong>3. Analiz ve Raporlar:</strong> Her hedefin kendi ilerleme yüzdesini, hangi derste ve hangi saatte dikkat kaybı yaşadığını ve haftalık koç önerilerini takip edebilirsin.</p>
-              <p><strong>4. Kalıcı Kayıt:</strong> Yaptığın tüm değişiklikler ve çalışma seansları otomatik olarak telefonunun hafızasına kaydedilir.</p>
+              <p><strong>4. Kalıcı Kayıt:</strong> Yaptığın tüm değişiklikler ve çalışma seansları otomatik olarak cihazının yerel hafızasına kaydedilir.</p>
             </div>
             <button 
               onClick={() => setShowGuideModal(false)}
