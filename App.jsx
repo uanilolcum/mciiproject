@@ -116,6 +116,10 @@ const TRANSLATIONS = {
     rateSessionLabel: 'SEANSI DEĞERLENDİR (1 = Çok Verimsiz, 10 = Çok Verimli):',
     sessionNotesLabel: 'SEANSLA İLGİLİ KISA NOTUN (İsteğe Bağlı)',
     sessionNotesPlaceholder: 'Örn: "İlk 20 dk iyiydi, sonra dikkatim dağıldı." veya "Telefonu kapatmak işe yaradı."',
+    progressReminderTitle: 'Hedef İlerlemeni Kaydetmeyi Unutma!',
+    progressReminderLabel: (metric) => `Bu seansta hedefine kaç ${metric} ekledin? (İsteğe Bağlı)`,
+    progressReminderHint: (curr, target, metric) => `Mevcut: ${curr} / ${target} ${metric}`,
+    progressPreview: (nextVal, metric) => `Kaydedilince yeni değer: ${nextVal} ${metric}`,
     goBackBtn: 'Geri Dön',
     saveAndReportBtn: 'Kaydet ve Raporu Gör',
     noNoteDefault: 'Not eklenmedi.',
@@ -321,6 +325,10 @@ const TRANSLATIONS = {
     rateSessionLabel: 'RATE THIS SESSION (1 = Very Low, 10 = Very High):',
     sessionNotesLabel: 'BRIEF SESSION NOTE (Optional)',
     sessionNotesPlaceholder: 'e.g., "First 20 min were great, then got distracted." or "Keeping phone away helped."',
+    progressReminderTitle: 'Don’t Forget to Log Your Goal Progress!',
+    progressReminderLabel: (metric) => `How many ${metric} did you add in this session? (Optional)`,
+    progressReminderHint: (curr, target, metric) => `Current: ${curr} / ${target} ${metric}`,
+    progressPreview: (nextVal, metric) => `New total after saving: ${nextVal} ${metric}`,
     goBackBtn: 'Go Back',
     saveAndReportBtn: 'Save & View Report',
     noNoteDefault: 'No notes added.',
@@ -661,6 +669,7 @@ export default function App() {
   const [showEndModal, setShowEndModal] = useState(false);
   const [sessionRating, setSessionRating] = useState(8);
   const [sessionNotes, setSessionNotes] = useState('');
+  const [sessionProgressDelta, setSessionProgressDelta] = useState('');
 
   // Yeni Hedef Ekleme ve Düzenleme State'leri
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -724,6 +733,7 @@ export default function App() {
     setCurrentDistractions({ ...EMPTY_DISTRACTIONS });
     setActiveObstacle(null);
     setShowEndModal(false);
+    setSessionProgressDelta('');
   };
 
   // Klasik Zaman Etüdü Zamanlayıcısı
@@ -857,7 +867,7 @@ export default function App() {
           'Ders_Konu', 'Planlanan_Dk', 'Aktif_Calisma_Dk', 'Aktif_Calisma_Sn', 'Toplam_Blok_Sn',
           'Kopma_Suresi_Sn', 'Kopma_Suresi_Dk', 'Gercek_Calisma_Orani_Yuzde',
           'Kopma_Telefon_Bildirim', 'Kopma_Hayal_Kurma', 'Kopma_Gorev_Degistirme', 'Kopma_Diger',
-          'Toplam_Kopma_Sayisi', 'Sure_Doldu_Mu', 'Verim_Puani_10', 'Seans_Notu'
+          'Toplam_Kopma_Sayisi', 'Sure_Doldu_Mu', 'Seans_Eklenen_Ilerleme', 'Verim_Puani_10', 'Seans_Notu'
         ]
       : [
           'Alias', 'Target_Field', 'Session_ID', 'Week_No', 'Date', 'Start_Time', 'Time_Slot',
@@ -865,7 +875,7 @@ export default function App() {
           'Subject_Topic', 'Planned_Min', 'Active_Study_Min', 'Active_Study_Sec', 'Total_Block_Sec',
           'Distraction_Duration_Sec', 'Distraction_Duration_Min', 'Actual_Study_Rate_Pct',
           'Dist_Phone_Notification', 'Dist_Daydreaming', 'Dist_Task_Switching', 'Dist_Other',
-          'Total_Distractions', 'Completed_By_Time_Limit', 'Efficiency_Rating_10', 'Session_Notes'
+          'Total_Distractions', 'Completed_By_Time_Limit', 'Session_Progress_Added', 'Efficiency_Rating_10', 'Session_Notes'
         ];
 
     const sortedSessions = [...sessions].sort((a, b) => {
@@ -922,6 +932,7 @@ export default function App() {
         dOther,
         dTotal,
         timeLimitStr,
+        s.progressAdded || 0,
         s.rating,
         s.notes || ''
       ].map(escapeCell).join(delimiter);
@@ -1028,6 +1039,7 @@ export default function App() {
     const plannedMins = Math.max(1, Number(plannedTime) || 30);
     const actualMinutes = Math.min(plannedMins, Math.round(elapsedTime / 60));
     const pausedSeconds = Math.max(0, totalElapsedTime - elapsedTime);
+    const addedProgress = Math.max(0, Number(sessionProgressDelta) || 0);
     const now = new Date();
     const newSession = {
       id: 's' + Date.now(),
@@ -1041,10 +1053,18 @@ export default function App() {
       totalElapsedSeconds: totalElapsedTime,
       pausedSeconds: pausedSeconds,
       completedByTimeLimit: isTimeUp,
+      progressAdded: addedProgress,
       rating: sessionRating,
       notes: sessionNotes.trim() || t.noNoteDefault,
       distractions: { ...currentDistractions }
     };
+    if (addedProgress > 0) {
+      setGoals(prev => prev.map(g =>
+        g.id === activeGoal.id
+          ? { ...g, currentValue: (Number(g.currentValue) || 0) + addedProgress }
+          : g
+      ));
+    }
     setSessions(prev => [...prev, newSession]);
     resetSessionState();
     setActiveGoal(null);
@@ -1800,6 +1820,38 @@ export default function App() {
               <p className="text-xs text-slate-500 mb-4 leading-relaxed">
                 {t.plannedBlock}: <strong>{plannedTime} {t.minShort}</strong> • {t.activeStudyLabel}: <strong>{formatTime(elapsedTime)} ({Math.min(Number(plannedTime) || 30, Math.round(elapsedTime / 60))} {t.minShort})</strong> • {t.pauseBreak}: <strong>{formatTime(Math.max(0, totalElapsedTime - elapsedTime))}</strong>
               </p>
+
+              {/* HEDEF İLERLEME HATIRLATMA VE HIZLI GÜNCELLEME KUTUSU */}
+              {activeGoal && (
+                <div className="mb-4 p-3.5 rounded-2xl bg-indigo-50 border border-indigo-200">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <Target className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <span className="text-xs font-extrabold text-indigo-900">{t.progressReminderTitle}</span>
+                  </div>
+                  <p className="text-[11px] text-indigo-700 mb-2">
+                    {t.progressReminderHint(activeGoal.currentValue, activeGoal.targetValue, activeGoal.metric)}
+                  </p>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                    {t.progressReminderLabel(activeGoal.metric)}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="0"
+                      className="w-28 p-2 bg-white border border-indigo-200 rounded-xl text-sm font-extrabold text-indigo-700 text-center outline-none focus:border-indigo-500"
+                      value={sessionProgressDelta}
+                      onChange={(e) => setSessionProgressDelta(e.target.value)}
+                    />
+                    <span className="text-xs font-bold text-slate-600">{activeGoal.metric}</span>
+                  </div>
+                  {Number(sessionProgressDelta) > 0 && (
+                    <p className="text-[11px] font-extrabold text-emerald-700 mt-1.5">
+                      {t.progressPreview((Number(activeGoal.currentValue) || 0) + Number(sessionProgressDelta), activeGoal.metric)}
+                    </p>
+                  )}
+                </div>
+              )}
 
               <div className="mb-4">
                 <label className="text-xs font-bold text-slate-700 block mb-2">
