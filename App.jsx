@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Play, Square, CheckCircle, BarChart2, Home, Target, Clock, 
   Plus, BookOpen, AlertCircle, Calendar, X, Award, TrendingUp, 
@@ -31,10 +31,10 @@ const TRANSLATIONS = {
     continueBtn: 'Devam Et',
     welcomeTitle: (name) => `Hoş Geldin, ${name}!`,
     welcomeSubtitle: 'Uygulamayı nasıl kullanacağına hızlıca göz atalım.',
-    step1Title: 'MCII ile Sayısal Hedef ve Süre Belirle',
-    step1Desc: 'Sadece "ders çalışacağım" demek yerine; başlangıç değerini, hedef değerini (örn. 0’dan 300 soruya) ve bitiş tarihini gir. Her dikkat dağıtıcı türü için ayrı "Eğer şu olursa, O zaman bunu yapacağım" planları kur.',
-    step2Title: 'Akıllı Kronometre ve Zaman Etüdü',
-    step2Desc: 'Seansa başla. Çalışırken telefon, hayal kurma, görev değiştirme veya diğer bir nedenle dersten koparsan ilgili butona bas. Aktif çalışma sayacı durur ve sana tam o kategoriye özel Eğer-O Zaman çözümünü hatırlatır!',
+    step1Title: 'MCII (WOOP) ile Hedef ve İçsel Engel Planı Kur',
+    step1Desc: 'Somut 3 haftalık hedefini belirle, en iyi sonucu zihninde canlandır, seni en çok zorlayabilecek kişisel içsel engelini fark et ve bu engel için kendi "Eğer… O Zaman…" planını oluştur.',
+    step2Title: 'Zaman Etüdü ve Birleşik Dikkat Müdahalesi',
+    step2Desc: 'Seansa başla. Çalışırken telefon, hayal kurma, görev değiştirme veya diğer bir nedenle dersten koparsan ilgili butona bas. Aktif çalışma sayacı durur; o dikkat dağıtıcıya özel hızlı eylem ile kendi MCII planın birlikte karşına gelir!',
     step3Title: 'Haftalık Analiz ve Excel Veri Dışa Aktarma',
     step3Desc: '1., 2. ve 3. hafta gelişimini, kopma sürelerini ve verimlilik oranlarını incele. Çalışma sonunda tüm verilerini tek tıkla Excel (CSV) formatında indir.',
     startAppBtn: 'Uygulamaya Başla',
@@ -46,19 +46,27 @@ const TRANSLATIONS = {
     clearAllBtn: 'Tümünü Temizle',
     editGoalTitle: 'Hedefi ve MCII Planını Düzenle',
     newGoalTitle: 'MCII Hedef Planlama Formu',
-    editGoalSub: 'Hedef bilgilerini veya kategoriye özel Eğer-O Zaman planlarını güncelle.',
-    newGoalSub: 'Somut, ölçülebilir ve zamana bağlı bir hedef oluştur.',
-    goalStep1: 'ADIM 1: SOMUT HEDEFİN NEDİR?',
+    editGoalSub: 'Hedef bilgilerini, kişisel içsel engelini ve ana MCII planını güncelle.',
+    newGoalSub: 'MCII (WOOP) aşamalarını izleyerek somut, ölçülebilir bir hedef oluştur.',
+    goalStep1: 'ADIM 1: SOMUT HEDEFİN NEDİR? (WISH)',
     goalTitlePlaceholder: 'Örn: Matematikte 3 haftada 300 soru çözmek',
     deadlineLabel: 'HEDEF BİTİŞ TARİHİ',
     metricLabel: 'ÖLÇÜM BİRİMİ',
     startValLabel: 'BAŞLANGIÇ',
     currentValLabel: 'ŞU ANKİ DEĞER',
     targetValLabel: 'HEDEF DEĞER',
-    goalStep2: 'ADIM 2: OLUMLU GELECEĞİ HAYAL ET (EN İYİ SONUÇ)',
-    bestOutcomePlaceholder: 'Bu hedefe ulaştığında ne hissedeceksin? (Örn: Stresim azalacak, kendime güvenim artacak...)',
-    goalStep34: 'ADIM 3 & 4: DİKKAT KESİNTİSİ TÜRLERİNE GÖRE "EĞER... O ZAMAN..." PLANLARI',
-    goalStep34Hint: 'Çalışma sırasında hangi dikkat dağıtıcıya basarsan, aşağıda o başlık için yazdığın plan ekrana gelecektir.',
+    goalStep2: 'ADIM 2: OLUMLU SONUCU ZİHİNDE CANLANDIR (OUTCOME)',
+    goalStep2Hint: 'Bu hedefe ulaştığında ne elde edeceksin? Senin için neden önemli ve gerçekleştiğinde hayatında veya derslerinde ne değişecek? Gözünde canlandırarak yaz.',
+    bestOutcomePlaceholder: 'Örn: Deneme netlerim yükselecek, sınav kaygım azalacak ve kendime olan güvenim artacak...',
+    goalStep3: 'ADIM 3: KİŞİSEL İÇSEL ENGELİN NEDİR? (OBSTACLE)',
+    goalStep3Hint: 'Bu hedefe ulaşmamı zorlaştırabilecek en önemli kişisel (içsel) engelim nedir? (Örn: Zor sorularda hemen vazgeçme, erteleme alışkanlığı, başarısız olma düşüncesi, sıkılınca bırakma, kendine güvenememe...)',
+    personalObstaclePlaceholder: 'Örn: Zor bir soruda takıldığımda hemen sıkılıp vazgeçme ve çalışmayı erteleme eğilimim...',
+    goalStep4: 'ADIM 4: KİŞİSEL ENGELİN İÇİN ANA MCII PLANI (PLAN)',
+    goalStep4Hint: 'Yukarıda yazdığın kişisel içsel engelin ortaya çıktığında uygulayacağın somut "Eğer… O Zaman…" planını oluştur.',
+    mainIfPlaceholder: 'Örn: Zor soruda takılıp vazgeçme veya erteleme isteği hissederse...',
+    mainThenPlaceholder: 'Örn: Derin bir nefes alıp soruyu küçük adımlara bölecek ve en az 5 dakika daha masada kalacağım.',
+    timeStudyInfoTitle: 'Çalışma Sırası Dikkat İzleme ve Anlık Müdahale Sistemi',
+    timeStudyInfoDesc: 'Çalışma seansında Telefon/Bildirim, Hayal Kurma, Görev Değiştirme veya Diğer dikkat dağıtıcılarından birine bastığında standart davranışsal müdahale ile yukarıdaki kişisel MCII planın birlikte ekrana gelir.',
     ifTag: 'EĞER',
     thenTag: 'O ZAMAN',
     updateGoalBtn: 'Değişiklikleri Güncelle',
@@ -66,7 +74,7 @@ const TRANSLATIONS = {
     noGoalsTitle: 'Henüz Hiç Hedefin Yok',
     noGoalsDesc: 'Kendi çalışma hedeflerini ve "Eğer-O Zaman" planlarını oluşturarak hemen başla veya örnek verileri geri yükle.',
     createGoalBtn: 'Yeni Hedef Oluştur',
-    restoreSampleBtn: 'Örnek Hedefleri Geri Yükle',
+    restoreSampleBtn: 'Örnek Hedefleri Yükle',
     expired: 'Süre Doldu',
     daysLeft: (d) => `Hedefe Son ${d} Gün`,
     studiedSummary: (min, count) => `${min} dk çalışıldı (${count} seans)`,
@@ -78,8 +86,12 @@ const TRANSLATIONS = {
     targetShort: 'Hedef',
     goalAttainmentLabel: 'Hedefe Ulaşma Oranı',
     updateCurrentLabel: (metric) => `Güncel ${metric}:`,
-    bestOutcomeLabel: 'En İyi Sonuç:',
-    mciiPlansLabel: 'MCII "Eğer - O Zaman" Planların:',
+    bestOutcomeLabel: 'En İyi Sonuç (Zihinsel Canlandırma):',
+    personalObstacleLabel: 'Kişisel İçsel Engelin:',
+    mciiPlansLabel: 'Ana MCII "Eğer – O Zaman" Planın:',
+    mciiReminderBadge: 'MCII Hatırlatması (Kişisel İçsel Engelin)',
+    quickActionBadge: 'Anlık Dikkat Müdahalesi',
+    preSessionMciiTitle: 'Seans Öncesi MCII Hatırlatması',
     viewGoalReport: 'Bu Hedefin Özel Raporunu Gör',
     timerSetupTitle: 'Çalışma Seansı Verimlilik Kaydı',
     timerSetupDesc: 'Seansa başlamadan önce 1. Bölümü doldur. Çalışma dışında bir şey yaptığında ilgili dikkat dağıtıcıya basarak aktif sayacı durdur.',
@@ -170,13 +182,16 @@ const TRANSLATIONS = {
     effBadge: 'Verim:',
     deleteModalTitle: 'Hedefi Silmek İstiyor Musun?',
     deleteModalDesc: (title) => `"${title}" hedefi ve bu hedefe bağlı çalışma seansı kayıtları silinecek.`,
+    clearAllModalTitle: 'Tüm Verileri Silmek İstiyor Musun?',
+    clearAllModalDesc: 'Oluşturduğun tüm hedefler ve çalışma seansı kayıtların kalıcı olarak silinecek. Bu işlem geri alınamaz.',
+    confirmClearAllBtn: 'Evet, Tümünü Sil',
     cancelBtn: 'Vazgeç',
     confirmDeleteBtn: 'Evet, Sil',
     guideModalTitle: 'MCII Uygulama Rehberi',
-    guideP1Title: '1. Hedef ve Süre Belirleme:',
-    guideP1Body: 'Hedef kartlarında başlangıç ve hedef değerini, bitiş tarihini ve 4 dikkat kesintisi türü için ayrı "Eğer-O Zaman" planlarını oluşturabilirsin.',
-    guideP2Title: '2. Çalışma Seansı (Zaman Etüdü):',
-    guideP2Body: 'Seansa başlarken planladığın süreyi girersin. Dersten her koptuğunda ilgili çetele butonuna basarsın; aktif çalışma sayacı durur ve o kategoriye özel çözüm planın ekrana gelir. Planlanan toplam blok süresi dolduğunda kronometre otomatik olarak durur.',
+    guideP1Title: '1. MCII (WOOP) Hedef Planlama:',
+    guideP1Body: 'Somut 3 haftalık hedefini belirler, olumlu sonucu zihninde canlandırır, seni zorlayabilecek kişisel içsel engelini yazar ve bu engel için ana "Eğer–O Zaman" planını kurarsın.',
+    guideP2Title: '2. Çalışma Seansı ve Birleşik Müdahale:',
+    guideP2Body: 'Seansa başlarken planladığın süreyi girersin. Dersten her koptuğunda ilgili dikkat dağıtıcıya basarsın; aktif sayaç durur, o kategoriye özel standart müdahale ile kendi MCII planın birlikte ekrana gelir. Planlanan blok süresi dolduğunda kronometre otomatik durur.',
     guideP3Title: '3. Analiz ve Excel Dışa Aktarma:',
     guideP3Body: 'Haftalık gelişimini (1.–3. hafta), kopma sürelerini ve verimlilik oranlarını takip edebilir; tüm verilerini rumuzunla adlandırılmış Excel (CSV) dosyası olarak indirebilirsin.',
     guideP4Title: '4. Gizlilik ve Kalıcı Kayıt:',
@@ -189,23 +204,19 @@ const TRANSLATIONS = {
     categories: {
       'Telefon/Bildirim': {
         label: 'Telefon/Bildirim',
-        ifPlaceholder: 'Örn: Telefon ekranı aydınlanıp bildirim düşerse...',
-        thenPlaceholder: 'Örn: Telefonu yüzüstü çevirip Rahatsız Etme moduna alacağım.'
+        intervention: 'Telefonu sessize veya uçak moduna al, yüzüstü çevir ve uzanamayacağın bir yere bırak.'
       },
       'Hayal Kurma': {
         label: 'Hayal Kurma',
-        ifPlaceholder: 'Örn: Okuduğum konudan kopup zihnim başka yere kayarsa...',
-        thenPlaceholder: 'Örn: Gözlerimi ilk kelimeye sabitleyip kalemle satır takibi yapacağım.'
+        intervention: 'Aklına takılan düşünceyi seans sonrasına bırakmak üzere bir kâğıda kısaca not et; ardından kaldığın soruyu veya cümleyi kalemle takip ederek hemen devam et.'
       },
       'Görev Değiştirme': {
         label: 'Görev Değiştirme',
-        ifPlaceholder: 'Örn: Çalıştığım dersten sıkılıp başka derse geçmek istersem...',
-        thenPlaceholder: 'Örn: Mevcut konuda 10 dakika daha kalıp o bloğu tamamlayacağım.'
+        intervention: 'Geçmek istediğin diğer dersi veya işi kenara not edip ertele; masandaki/ekrandaki gereksiz kaynakları kapat ve şu anki tek konuya geri dön.'
       },
       'Diğer': {
         label: 'Diğer',
-        ifPlaceholder: 'Örn: Dış ses, yorgunluk veya kaygı dikkatimi bölerse...',
-        thenPlaceholder: 'Örn: Kulaklık takacak ya da su içip yalnızca önümdeki soruya odaklanacağım.'
+        intervention: 'Dikkatini bölen etkeni (ses, dağınıklık, yorgunluk) en fazla 1 dakikada hızla gider; kontrolün dışındaysa ortamını/duruşunu düzenleyip yalnızca önündeki tek soruya odaklan.'
       }
     },
     metrics: {
@@ -216,6 +227,15 @@ const TRANSLATIONS = {
       Saat: 'Çalışma Saati',
       Konu: 'Tamamlanan Konu',
       Kelime: 'Öğrenilen Kelime'
+    },
+    metricsShort: {
+      Puan: 'Puan',
+      Soru: 'Soru',
+      Sayfa: 'Sayfa',
+      Deneme: 'Deneme',
+      Saat: 'Saat',
+      Konu: 'Konu',
+      Kelime: 'Kelime'
     },
     timeSlots: {
       morning: 'Sabah (06-12)',
@@ -240,10 +260,10 @@ const TRANSLATIONS = {
     continueBtn: 'Continue',
     welcomeTitle: (name) => `Welcome, ${name}!`,
     welcomeSubtitle: 'Let’s take a quick look at how to use the app.',
-    step1Title: 'Set Measurable Goals & Deadlines with MCII',
-    step1Desc: 'Instead of vague goals, enter your starting value, target value (e.g., 0 to 300 questions), and deadline. Create specific "If–Then" plans for each distraction type.',
-    step2Title: 'Smart Stopwatch & Time-Study Tracking',
-    step2Desc: 'Start a timed study block. Whenever phone notifications, daydreaming, task switching, or other distractions occur, tap the corresponding button. Active time pauses and your specific If–Then plan appears!',
+    step1Title: 'Build Your MCII (WOOP) Goal & Internal Obstacle Plan',
+    step1Desc: 'Set a measurable 3-week goal, vividly visualize the best outcome, identify your main personal (internal) obstacle, and craft your core "If… Then…" implementation intention.',
+    step2Title: 'Time-Study Tracking & Unified Focus Intervention',
+    step2Desc: 'Start a timed study block. Whenever phone notifications, daydreaming, task switching, or other distractions occur, tap the matching button. Active time pauses and displays both a standardized behavioral action and your personal MCII plan!',
     step3Title: 'Weekly Analytics & Excel Data Export',
     step3Desc: 'Track your Week 1–3 progress, distraction durations, and efficiency rates. Export all your anonymized data to Excel (CSV) with a single click.',
     startAppBtn: 'Start Using the App',
@@ -255,19 +275,27 @@ const TRANSLATIONS = {
     clearAllBtn: 'Clear All',
     editGoalTitle: 'Edit Goal & MCII Plans',
     newGoalTitle: 'MCII Goal Planning Form',
-    editGoalSub: 'Update goal targets or category-specific If–Then plans.',
-    newGoalSub: 'Create a concrete, measurable, and time-bound goal.',
-    goalStep1: 'STEP 1: WHAT IS YOUR CONCRETE GOAL?',
+    editGoalSub: 'Update your goal targets, personal internal obstacle, and core MCII plan.',
+    newGoalSub: 'Follow the MCII (WOOP) steps to create a concrete, measurable goal.',
+    goalStep1: 'STEP 1: WHAT IS YOUR CONCRETE GOAL? (WISH)',
     goalTitlePlaceholder: 'e.g., Solve 300 Math problems in 3 weeks',
     deadlineLabel: 'TARGET DEADLINE',
     metricLabel: 'MEASUREMENT UNIT',
     startValLabel: 'START',
     currentValLabel: 'CURRENT',
     targetValLabel: 'TARGET',
-    goalStep2: 'STEP 2: IMAGINE THE BEST OUTCOME',
-    bestOutcomePlaceholder: 'How will you feel when you achieve this goal? (e.g., Less exam stress, higher confidence...)',
-    goalStep34: 'STEPS 3 & 4: CATEGORY-SPECIFIC "IF… THEN…" PLANS',
-    goalStep34Hint: 'During a session, tapping a distraction button will immediately display the plan you wrote for that category.',
+    goalStep2: 'STEP 2: VISUALIZE THE BEST OUTCOME (OUTCOME)',
+    goalStep2Hint: 'What will you gain when you reach this goal? Why does it matter to you, and what will change in your life or studies? Picture it vividly and write it down.',
+    bestOutcomePlaceholder: 'e.g., My mock exam scores will improve, my test anxiety will decrease, and I will feel genuinely confident...',
+    goalStep3: 'STEP 3: WHAT IS YOUR MAIN INTERNAL OBSTACLE? (OBSTACLE)',
+    goalStep3Hint: 'What is the most important personal (internal) obstacle that could hold you back? (e.g., Giving up quickly on hard questions, procrastination, fear of failure, switching tasks when bored, low self-confidence...)',
+    personalObstaclePlaceholder: 'e.g., Tendency to get frustrated and give up quickly when I hit a difficult problem...',
+    goalStep4: 'STEP 4: MAIN MCII "IF… THEN…" PLAN FOR YOUR OBSTACLE (PLAN)',
+    goalStep4Hint: 'Write a concrete "If… Then…" action plan to overcome the personal internal obstacle you identified above.',
+    mainIfPlaceholder: 'e.g., I feel frustrated by a tough question and want to quit or procrastinate...',
+    mainThenPlaceholder: 'e.g., I will take a deep breath, break the problem into smaller steps, and stay at my desk for at least 5 more minutes.',
+    timeStudyInfoTitle: 'In-Session Distraction Monitoring & Intervention System',
+    timeStudyInfoDesc: 'During study sessions, tapping Phone/Notification, Daydreaming, Task Switching, or Other will display a standardized behavioral intervention together with your personal MCII plan above.',
     ifTag: 'IF',
     thenTag: 'THEN',
     updateGoalBtn: 'Update Changes',
@@ -275,7 +303,7 @@ const TRANSLATIONS = {
     noGoalsTitle: 'No Goals Yet',
     noGoalsDesc: 'Create your own study goals and "If–Then" plans to get started, or restore the sample goals.',
     createGoalBtn: 'Create New Goal',
-    restoreSampleBtn: 'Restore Sample Goals',
+    restoreSampleBtn: 'Load Sample Goals',
     expired: 'Expired',
     daysLeft: (d) => `${d} Days Left`,
     studiedSummary: (min, count) => `${min} min studied (${count} sessions)`,
@@ -287,8 +315,12 @@ const TRANSLATIONS = {
     targetShort: 'Target',
     goalAttainmentLabel: 'Goal Attainment Rate',
     updateCurrentLabel: (metric) => `Current ${metric}:`,
-    bestOutcomeLabel: 'Best Outcome:',
-    mciiPlansLabel: 'Your MCII "If–Then" Plans:',
+    bestOutcomeLabel: 'Best Outcome (Mental Visualization):',
+    personalObstacleLabel: 'Personal Internal Obstacle:',
+    mciiPlansLabel: 'Your Core MCII "If–Then" Plan:',
+    mciiReminderBadge: 'MCII Reminder (Your Internal Obstacle)',
+    quickActionBadge: 'Immediate Focus Action',
+    preSessionMciiTitle: 'Pre-Session MCII Reminder',
     viewGoalReport: 'View Detailed Report for This Goal',
     timerSetupTitle: 'Study Session Time-Study Log',
     timerSetupDesc: 'Complete Section 1 before starting. Whenever you lose focus, tap the matching distraction button to pause active study time.',
@@ -379,13 +411,16 @@ const TRANSLATIONS = {
     effBadge: 'Rating:',
     deleteModalTitle: 'Delete This Goal?',
     deleteModalDesc: (title) => `"${title}" and all study sessions linked to it will be permanently deleted.`,
+    clearAllModalTitle: 'Clear All Data?',
+    clearAllModalDesc: 'All of your goals and study session logs will be permanently deleted. This action cannot be undone.',
+    confirmClearAllBtn: 'Yes, Clear All',
     cancelBtn: 'Cancel',
     confirmDeleteBtn: 'Yes, Delete',
     guideModalTitle: 'MCII App User Guide',
-    guideP1Title: '1. Goal & Deadline Planning:',
-    guideP1Body: 'Set start/target values, deadlines, and separate "If–Then" plans for all 4 distraction categories.',
-    guideP2Title: '2. Time-Study Session:',
-    guideP2Body: 'Enter your planned block duration. Tap a distraction button whenever focus breaks; active time pauses and your tailored If–Then plan appears. The timer automatically stops when your planned block ends.',
+    guideP1Title: '1. MCII (WOOP) Goal Planning:',
+    guideP1Body: 'Define your 3-week measurable goal, vividly visualize the best outcome, identify your main personal internal obstacle, and create your core "If–Then" plan.',
+    guideP2Title: '2. Time-Study Session & Unified Intervention:',
+    guideP2Body: 'Enter your planned block duration. Tap a distraction button whenever focus breaks; active time pauses and displays both a standardized behavioral action and your personal MCII plan. The timer automatically stops when your planned block ends.',
     guideP3Title: '3. Analytics & Excel Export:',
     guideP3Body: 'Monitor your Week 1–3 progress, distraction durations, and efficiency rates, and export all records as an alias-labeled Excel (CSV) file.',
     guideP4Title: '4. Privacy & Local Storage:',
@@ -398,23 +433,19 @@ const TRANSLATIONS = {
     categories: {
       'Telefon/Bildirim': {
         label: 'Phone / Notification',
-        ifPlaceholder: 'e.g., My phone screen lights up with a notification...',
-        thenPlaceholder: 'e.g., I will turn it face down and enable Do Not Disturb.'
+        intervention: 'Switch your phone to silent or airplane mode, place it face down, and put it out of reach.'
       },
       'Hayal Kurma': {
         label: 'Daydreaming',
-        ifPlaceholder: 'e.g., My mind drifts away from the paragraph I am reading...',
-        thenPlaceholder: 'e.g., I will refocus on the first word and track lines with a pen.'
+        intervention: 'Briefly jot down the distracting thought on paper to revisit after the session; then immediately resume by tracking your current line or problem with a pen.'
       },
       'Görev Değiştirme': {
         label: 'Task Switching',
-        ifPlaceholder: 'e.g., I feel bored and want to switch to another subject...',
-        thenPlaceholder: 'e.g., I will stay on the current topic for 10 more minutes.'
+        intervention: 'Write down the other subject or task you want to switch to for later; close unrelated tabs or materials and return strictly to your current topic.'
       },
       'Diğer': {
         label: 'Other',
-        ifPlaceholder: 'e.g., Noise, fatigue, or anxiety interrupts my focus...',
-        thenPlaceholder: 'e.g., I will put on headphones or drink water and focus on one question.'
+        intervention: 'Quickly address the interruption (noise, clutter, fatigue) in under 1 minute; if it is outside your control, adjust your posture or environment and focus solely on the single problem in front of you.'
       }
     },
     metrics: {
@@ -425,6 +456,15 @@ const TRANSLATIONS = {
       Saat: 'Study Hours',
       Konu: 'Topics Completed',
       Kelime: 'Words Learned'
+    },
+    metricsShort: {
+      Puan: 'Points',
+      Soru: 'Questions',
+      Sayfa: 'Pages',
+      Deneme: 'Tests',
+      Saat: 'Hours',
+      Konu: 'Topics',
+      Kelime: 'Words'
     },
     timeSlots: {
       morning: 'Morning (06-12)',
@@ -441,67 +481,21 @@ const TRANSLATIONS = {
   }
 };
 
-const createEmptyObstaclePlans = () =>
-  DISTRACTION_KEYS.map(key => ({
-    category: key,
-    ifText: '',
-    thenText: ''
-  }));
-
 const INITIAL_GOALS = [
   {
     id: 'g1',
-    title: 'Matematik Notumu 85\'e Çıkarmak',
-    bestOutcome: 'Dönem sonunda takdir belgesi almak, ailemi gururlandırmak ve sınav stresimi azaltmak.',
-    obstacles: [
-      { id: 'o1', category: 'Telefon/Bildirim', if: 'Telefonumdan bildirim sesi gelirse ve bakmak istersem', then: 'Telefonumu çalışma süresince uçak moduna alıp başka odaya koyacağım.' },
-      { id: 'o2', category: 'Hayal Kurma', if: 'Çözdüğüm sorudan kopup zihnim başka düşüncelere kayarsa', then: 'Kalem ucuyla soruyu baştan yavaşça okuyup dikkatimi toplayacağım.' },
-      { id: 'o3', category: 'Görev Değiştirme', if: 'Zor bir soruda takılıp başka bir derse geçmek istersem', then: 'Soruyu işaretleyip 3 derin nefes alarak aynı konunun bir sonraki sorusuna geçeceğim.' },
-      { id: 'o4', category: 'Diğer', if: 'Yorgunluk veya dış ses nedeniyle odaklanmam düşerse', then: 'Kısa bir nefes alıp su içecek ve masaya dönerek seansı tamamlayacağım.' }
-    ],
-    metric: 'Puan',
-    startValue: 65,
-    currentValue: 78,
-    targetValue: 85,
+    title: '3 Haftada 300 Matematik Sorusu Çözmek',
+    bestOutcome: 'Konu eksiklerimi kapatıp deneme netlerimi yükselteceğim; sınav stresim azalacak ve kendime olan güvenim artacak.',
+    personalObstacle: 'Zor sorularda takıldığımda hemen sıkılıp vazgeçme ve çalışmayı erteleme eğilimim.',
+    mainIf: 'Zor bir soruda takılıp vazgeçme veya masadan kalkma isteği hissedersem',
+    mainThen: 'Derin bir nefes alıp soruyu küçük adımlara bölecek, 5 dakika daha uğraştıktan sonra çözemezsem işaretleyip bir sonraki soruya geçeceğim.',
+    metric: 'Soru',
+    startValue: 0,
+    currentValue: 120,
+    targetValue: 300,
     deadline: '2026-12-25',
     isCompleted: false,
     createdAt: '2026-11-01'
-  },
-  {
-    id: 'g2',
-    title: 'Tales Fen Bilimleri Olimpiyatı Hazırlığı',
-    bestOutcome: 'Ulusal finale kalmak ve bilimsel proje yetkinliğimi kanıtlamak.',
-    obstacles: [
-      { id: 'o5', category: 'Telefon/Bildirim', if: 'Sosyal medya bildirimi gelip elime telefonu alırsam', then: 'Uygulamayı kapatıp telefonu çantamın içine koyacağım.' },
-      { id: 'o6', category: 'Hayal Kurma', if: 'Uzun sorularda dalgınlığa kapılırsam', then: 'Önemli ifadelerin altını çizerek soruyu yeniden okuyacağım.' },
-      { id: 'o7', category: 'Görev Değiştirme', if: 'Olimpiyat sorularından sıkılıp kolay testlere geçmek istersem', then: 'Mevcut testte en az 5 soru daha çözmeden konuyu değiştirmeyeceğim.' },
-      { id: 'o8', category: 'Diğer', if: 'Okuldan eve çok yorgun gelirsem', then: '20 dakika dinlenip alarm kuracağım, alarm çalınca masaya geçeceğim.' }
-    ],
-    metric: 'Soru',
-    startValue: 0,
-    currentValue: 140,
-    targetValue: 250,
-    deadline: '2026-12-10',
-    isCompleted: false,
-    createdAt: '2026-11-05'
-  },
-  {
-    id: 'g3',
-    title: 'AP Fizik 1 Deneme Çözümleri',
-    bestOutcome: 'Tüm konuları eksiksiz tamamlayıp sınavdan 5 tam puan almak.',
-    obstacles: [
-      { id: 'o9', category: 'Telefon/Bildirim', if: 'Deneme çözerken telefonumun ekranı yanarsa', then: 'Ekrana bakmadan telefonu sessize alıp uzaklaştıracağım.' },
-      { id: 'o10', category: 'Hayal Kurma', if: 'Çalışırken hayal kurmaya başlarsam', then: 'Dik oturuşumu düzeltip 2 derin nefes alarak soruya döneceğim.' },
-      { id: 'o11', category: 'Görev Değiştirme', if: 'Denemenin ortasında not düzenleme gibi yan işlere kayarsam', then: 'Yan işi bırakıp elimdeki denemenin kalan sorularını bitireceğim.' },
-      { id: 'o12', category: 'Diğer', if: 'Süre yetmeyecek kaygısı yaşarsam', then: 'Saate bakmayı bırakıp yalnızca önümdeki tek soruya odaklanacağım.' }
-    ],
-    metric: 'Deneme',
-    startValue: 0,
-    currentValue: 4,
-    targetValue: 10,
-    deadline: '2026-11-30',
-    isCompleted: false,
-    createdAt: '2026-11-10'
   }
 ];
 
@@ -613,18 +607,18 @@ export default function App() {
   const [goals, setGoals] = useState(() => {
     try {
       const savedGoals = localStorage.getItem('mcii_goals');
-      return savedGoals ? JSON.parse(savedGoals) : INITIAL_GOALS;
+      return savedGoals ? JSON.parse(savedGoals) : [];
     } catch (e) {
-      return INITIAL_GOALS;
+      return [];
     }
   });
 
   const [sessions, setSessions] = useState(() => {
     try {
       const savedSessions = localStorage.getItem('mcii_sessions');
-      return savedSessions ? JSON.parse(savedSessions) : INITIAL_SESSIONS;
+      return savedSessions ? JSON.parse(savedSessions) : [];
     } catch (e) {
-      return INITIAL_SESSIONS;
+      return [];
     }
   });
 
@@ -675,16 +669,19 @@ export default function App() {
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [goalToDelete, setGoalToDelete] = useState(null);
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
   const [newGoal, setNewGoal] = useState({
     title: '',
     bestOutcome: '',
-    metric: 'Puan',
+    personalObstacle: '',
+    mainIf: '',
+    mainThen: '',
+    metric: 'Soru',
     startValue: 0,
     currentValue: 0,
-    targetValue: 100,
+    targetValue: 300,
     deadline: '2026-12-31'
   });
-  const [newObstacles, setNewObstacles] = useState(createEmptyObstaclePlans());
 
   // Rapor Filtreleri
   const [selectedReportGoalId, setSelectedReportGoalId] = useState('all');
@@ -723,6 +720,11 @@ export default function App() {
     </div>
   );
 
+  // Ekran kilidi ve arka plan sekmelerine dayanıklı sistem saati (Date.now) referansları
+  const lastTickRef = useRef(null);
+  const totalAccSecRef = useRef(0);
+  const activeAccSecRef = useRef(0);
+
   // Her yeni seans veya hedef değişiminde kopmaları ve kronometreyi sıfırla
   const resetSessionState = () => {
     setIsSessionActive(false);
@@ -734,20 +736,56 @@ export default function App() {
     setActiveObstacle(null);
     setShowEndModal(false);
     setSessionProgressDelta('');
+    lastTickRef.current = null;
+    totalAccSecRef.current = 0;
+    activeAccSecRef.current = 0;
   };
 
-  // Klasik Zaman Etüdü Zamanlayıcısı
+  // Klasik Zaman Etüdü Zamanlayıcısı (Date.now() tabanlı — ekran kilitlense bile sapma yapmaz)
   useEffect(() => {
-    if (!isSessionActive || showEndModal || isTimeUp) return;
+    if (!isSessionActive || showEndModal || isTimeUp) {
+      lastTickRef.current = null;
+      return;
+    }
 
-    const interval = setInterval(() => {
-      setTotalElapsedTime(prev => Math.min(plannedSeconds, prev + 1));
-      if (isRunning) {
-        setElapsedTime(prev => Math.min(plannedSeconds, prev + 1));
+    lastTickRef.current = Date.now();
+
+    const syncClock = () => {
+      const now = Date.now();
+      if (lastTickRef.current === null) {
+        lastTickRef.current = now;
+        return;
       }
-    }, 1000);
+      const deltaSec = Math.max(0, (now - lastTickRef.current) / 1000);
+      lastTickRef.current = now;
 
-    return () => clearInterval(interval);
+      const remainingBeforeDelta = Math.max(0, plannedSeconds - totalAccSecRef.current);
+      const effectiveDelta = Math.min(deltaSec, remainingBeforeDelta);
+
+      totalAccSecRef.current += effectiveDelta;
+      if (isRunning) {
+        activeAccSecRef.current = Math.min(plannedSeconds, activeAccSecRef.current + effectiveDelta);
+      }
+
+      setTotalElapsedTime(Math.min(plannedSeconds, Math.floor(totalAccSecRef.current)));
+      setElapsedTime(Math.min(plannedSeconds, Math.floor(activeAccSecRef.current)));
+    };
+
+    const interval = setInterval(syncClock, 500);
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        syncClock();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', syncClock);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', syncClock);
+    };
   }, [isSessionActive, isRunning, showEndModal, isTimeUp, plannedSeconds]);
 
   // Planlanan toplam blok süresi dolduğunda kronometreyi otomatik durdur
@@ -843,6 +881,10 @@ export default function App() {
     return (t.categories[key] && t.categories[key].label) ? t.categories[key].label : key;
   };
 
+  const getMetricLabel = (metricKey) => {
+    return (t.metricsShort && t.metricsShort[metricKey]) ? t.metricsShort[metricKey] : metricKey;
+  };
+
   // --- EXCEL / CSV DIŞA AKTARMA (RUMUZ İLE ADLANDIRILMIŞ, SPSS & EXCEL UYUMLU) ---
   const handleExportCSV = () => {
     if (sessions.length === 0) {
@@ -863,7 +905,7 @@ export default function App() {
     const headers = lang === 'tr'
       ? [
           'Rumuz', 'Hedef_Alani', 'Seans_ID', 'Hafta_No', 'Tarih', 'Baslangic_Saati', 'Zaman_Dilimi',
-          'Hedef_Adi', 'Hedef_Birimi', 'Hedef_Baslangic', 'Hedef_Guncel', 'Hedef_Deger', 'Hedefe_Ulasma_Yuzde',
+          'Hedef_Adi', 'En_Iyi_Sonuc', 'Kisisel_Icsel_Engel', 'Ana_MCII_Eger', 'Ana_MCII_OZaman', 'Hedef_Birimi', 'Hedef_Baslangic', 'Hedef_Guncel', 'Hedef_Deger', 'Hedefe_Ulasma_Yuzde',
           'Ders_Konu', 'Planlanan_Dk', 'Aktif_Calisma_Dk', 'Aktif_Calisma_Sn', 'Toplam_Blok_Sn',
           'Kopma_Suresi_Sn', 'Kopma_Suresi_Dk', 'Gercek_Calisma_Orani_Yuzde',
           'Kopma_Telefon_Bildirim', 'Kopma_Hayal_Kurma', 'Kopma_Gorev_Degistirme', 'Kopma_Diger',
@@ -871,7 +913,7 @@ export default function App() {
         ]
       : [
           'Alias', 'Target_Field', 'Session_ID', 'Week_No', 'Date', 'Start_Time', 'Time_Slot',
-          'Goal_Title', 'Goal_Metric', 'Goal_Start', 'Goal_Current', 'Goal_Target', 'Goal_Attainment_Pct',
+          'Goal_Title', 'Best_Outcome', 'Personal_Internal_Obstacle', 'Main_MCII_If', 'Main_MCII_Then', 'Goal_Metric', 'Goal_Start', 'Goal_Current', 'Goal_Target', 'Goal_Attainment_Pct',
           'Subject_Topic', 'Planned_Min', 'Active_Study_Min', 'Active_Study_Sec', 'Total_Block_Sec',
           'Distraction_Duration_Sec', 'Distraction_Duration_Min', 'Actual_Study_Rate_Pct',
           'Dist_Phone_Notification', 'Dist_Daydreaming', 'Dist_Task_Switching', 'Dist_Other',
@@ -913,6 +955,10 @@ export default function App() {
         s.startTime,
         t.timeSlots[slotKey],
         goalObj ? goalObj.title : '',
+        goalObj ? (goalObj.bestOutcome || '') : '',
+        goalObj ? (goalObj.personalObstacle || '') : '',
+        goalObj ? (goalObj.mainIf || '') : '',
+        goalObj ? (goalObj.mainThen || '') : '',
         goalObj ? goalObj.metric : '',
         goalObj ? goalObj.startValue : '',
         goalObj ? goalObj.currentValue : '',
@@ -964,40 +1010,33 @@ export default function App() {
     setNewGoal({
       title: '',
       bestOutcome: '',
-      metric: 'Puan',
+      personalObstacle: '',
+      mainIf: '',
+      mainThen: '',
+      metric: 'Soru',
       startValue: 0,
       currentValue: 0,
-      targetValue: 100,
+      targetValue: 300,
       deadline: '2026-12-31'
     });
-    setNewObstacles(createEmptyObstaclePlans());
     setShowAddGoal(true);
   };
 
   const handleEditGoalClick = (goal) => {
     setEditingGoalId(goal.id);
+    const legacyFirst = (goal.obstacles && goal.obstacles.length > 0) ? goal.obstacles[0] : null;
     setNewGoal({
-      title: goal.title,
-      bestOutcome: goal.bestOutcome,
-      metric: goal.metric,
-      startValue: goal.startValue,
-      currentValue: goal.currentValue,
-      targetValue: goal.targetValue,
-      deadline: goal.deadline
+      title: goal.title || '',
+      bestOutcome: goal.bestOutcome || '',
+      personalObstacle: goal.personalObstacle || '',
+      mainIf: goal.mainIf || (legacyFirst ? legacyFirst.if || '' : ''),
+      mainThen: goal.mainThen || (legacyFirst ? legacyFirst.then || '' : ''),
+      metric: goal.metric || 'Soru',
+      startValue: goal.startValue ?? 0,
+      currentValue: goal.currentValue ?? 0,
+      targetValue: goal.targetValue ?? 100,
+      deadline: goal.deadline || '2026-12-31'
     });
-    const mappedObstacles = DISTRACTION_KEYS.map((key, idx) => {
-      const matched = (goal.obstacles || []).find(o => o.category === key);
-      if (matched) {
-        return { category: key, ifText: matched.if || '', thenText: matched.then || '' };
-      }
-      const legacy = (goal.obstacles || []).filter(o => !o.category)[idx];
-      return {
-        category: key,
-        ifText: legacy ? legacy.if || '' : '',
-        thenText: legacy ? legacy.then || '' : ''
-      };
-    });
-    setNewObstacles(mappedObstacles);
     setShowAddGoal(true);
   };
 
@@ -1021,18 +1060,18 @@ export default function App() {
     setIsRunning(false);
     setCurrentDistractions(prev => ({ ...prev, [type]: prev[type] + 1 }));
 
-    const obstacles = (activeGoal && activeGoal.obstacles) ? activeGoal.obstacles : [];
-    const matchedPlan = obstacles.find(o => o.category === type && o.if && o.then);
+    const catObj = t.categories[type] || t.categories['Diğer'];
+    const legacyFirst = (activeGoal && activeGoal.obstacles && activeGoal.obstacles.length > 0)
+      ? activeGoal.obstacles[0]
+      : null;
 
-    if (matchedPlan) {
-      setActiveObstacle({ ...matchedPlan, category: type });
-    } else {
-      setActiveObstacle({
-        category: type,
-        if: t.fallbackIf(getCategoryLabel(type)),
-        then: t.fallbackThen
-      });
-    }
+    setActiveObstacle({
+      category: type,
+      intervention: catObj ? catObj.intervention : t.fallbackThen,
+      personalObstacle: (activeGoal && activeGoal.personalObstacle) ? activeGoal.personalObstacle : '',
+      mainIf: (activeGoal && activeGoal.mainIf) ? activeGoal.mainIf : (legacyFirst ? legacyFirst.if : ''),
+      mainThen: (activeGoal && activeGoal.mainThen) ? activeGoal.mainThen : (legacyFirst ? legacyFirst.then : '')
+    });
   };
 
   const handleFinishSessionConfirm = () => {
@@ -1230,13 +1269,7 @@ export default function App() {
             {t.editHintBar}
           </span>
           <button
-            onClick={() => {
-              setGoals([]);
-              setSessions([]);
-              setActiveGoal(null);
-              resetSessionState();
-              setSelectedReportGoalId('all');
-            }}
+            onClick={() => setShowClearAllModal(true)}
             className="text-[11px] font-extrabold text-red-600 hover:text-red-700 flex items-center gap-1 shrink-0 ml-2"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -1327,102 +1360,98 @@ export default function App() {
               </div>
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-600 mb-1 block">{t.goalStep2}</label>
+            <div className="pt-2 border-t border-slate-100">
+              <label className="text-xs font-bold text-emerald-700 mb-1 block">{t.goalStep2}</label>
+              <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">{t.goalStep2Hint}</p>
               <textarea 
                 placeholder={t.bestOutcomePlaceholder} 
-                className="w-full p-3 bg-slate-50 rounded-xl text-sm border border-slate-200 outline-none resize-none" 
-                rows="2" 
+                className="w-full p-3 bg-emerald-50/40 rounded-xl text-sm border border-emerald-200 outline-none focus:border-emerald-500 resize-none" 
+                rows="3" 
                 value={newGoal.bestOutcome} 
                 onChange={e => setNewGoal({...newGoal, bestOutcome: e.target.value})}
               />
             </div>
 
-            <div className="pt-3 border-t border-slate-100">
-              <label className="text-xs font-bold text-slate-600 block mb-1">
-                {t.goalStep34}
-              </label>
-              <p className="text-[11px] text-slate-400 mb-3">
-                {t.goalStep34Hint}
-              </p>
-              {newObstacles.map((obs, idx) => {
-                const catMeta = t.categories[obs.category] || t.categories['Diğer'];
-                return (
-                  <div key={obs.category} className="space-y-2 mb-3 bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/70">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-extrabold text-indigo-800 bg-indigo-100 px-2.5 py-0.5 rounded-lg">
-                        {catMeta.label}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-extrabold text-amber-800 bg-amber-200 px-2 py-0.5 rounded shrink-0">{t.ifTag}</span>
-                      <input 
-                        type="text" 
-                        placeholder={catMeta.ifPlaceholder} 
-                        className="flex-1 p-2 rounded-lg text-xs outline-none border border-amber-200 bg-white" 
-                        value={obs.ifText} 
-                        onChange={e => {
-                          const updated = [...newObstacles];
-                          updated[idx] = { ...updated[idx], ifText: e.target.value };
-                          setNewObstacles(updated);
-                        }}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-extrabold text-emerald-800 bg-emerald-200 px-2 py-0.5 rounded shrink-0">{t.thenTag}</span>
-                      <input 
-                        type="text" 
-                        placeholder={catMeta.thenPlaceholder} 
-                        className="flex-1 p-2 rounded-lg text-xs outline-none border border-emerald-200 bg-white" 
-                        value={obs.thenText} 
-                        onChange={e => {
-                          const updated = [...newObstacles];
-                          updated[idx] = { ...updated[idx], thenText: e.target.value };
-                          setNewObstacles(updated);
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="pt-2 border-t border-slate-100">
+              <label className="text-xs font-bold text-rose-700 mb-1 block">{t.goalStep3}</label>
+              <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">{t.goalStep3Hint}</p>
+              <textarea 
+                placeholder={t.personalObstaclePlaceholder} 
+                className="w-full p-3 bg-rose-50/40 rounded-xl text-sm border border-rose-200 outline-none focus:border-rose-500 resize-none" 
+                rows="2" 
+                value={newGoal.personalObstacle} 
+                onChange={e => setNewGoal({...newGoal, personalObstacle: e.target.value})}
+              />
+            </div>
+
+            <div className="pt-2 border-t border-slate-100">
+              <label className="text-xs font-bold text-amber-800 block mb-1">{t.goalStep4}</label>
+              <p className="text-[11px] text-slate-500 mb-2.5 leading-relaxed">{t.goalStep4Hint}</p>
+              <div className="space-y-2.5 bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/80">
+                <div className="flex items-start gap-2">
+                  <span className="text-[11px] font-extrabold text-amber-900 bg-amber-200 px-2 py-1 rounded shrink-0 mt-1">{t.ifTag}</span>
+                  <textarea 
+                    rows="2"
+                    placeholder={t.mainIfPlaceholder} 
+                    className="flex-1 p-2 rounded-lg text-xs outline-none border border-amber-200 bg-white resize-none focus:border-amber-500" 
+                    value={newGoal.mainIf} 
+                    onChange={e => setNewGoal({...newGoal, mainIf: e.target.value})}
+                  />
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="text-[11px] font-extrabold text-emerald-900 bg-emerald-200 px-2 py-1 rounded shrink-0 mt-1">{t.thenTag}</span>
+                  <textarea 
+                    rows="2"
+                    placeholder={t.mainThenPlaceholder} 
+                    className="flex-1 p-2 rounded-lg text-xs outline-none border border-emerald-200 bg-white resize-none focus:border-emerald-500" 
+                    value={newGoal.mainThen} 
+                    onChange={e => setNewGoal({...newGoal, mainThen: e.target.value})}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-2.5">
+              <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[11px] font-extrabold text-slate-700 mb-0.5">{t.timeStudyInfoTitle}</p>
+                <p className="text-[11px] text-slate-500 leading-relaxed">{t.timeStudyInfoDesc}</p>
+              </div>
             </div>
 
             <button 
               onClick={() => {
                 if (!newGoal.title.trim()) return;
-                const formattedObstacles = newObstacles
-                  .filter(o => o.ifText.trim() && o.thenText.trim())
-                  .map((o, i) => ({
-                    id: 'o' + Date.now() + i,
-                    category: o.category,
-                    if: o.ifText.trim(),
-                    then: o.thenText.trim()
-                  }));
+                const cleanedGoalData = {
+                  ...newGoal,
+                  title: newGoal.title.trim(),
+                  bestOutcome: newGoal.bestOutcome.trim(),
+                  personalObstacle: newGoal.personalObstacle.trim(),
+                  mainIf: newGoal.mainIf.trim(),
+                  mainThen: newGoal.mainThen.trim()
+                };
 
                 if (editingGoalId) {
                   setGoals(goals.map(g => g.id === editingGoalId ? {
                     ...g,
-                    ...newGoal,
-                    obstacles: formattedObstacles
+                    ...cleanedGoalData
                   } : g));
                   if (activeGoal && activeGoal.id === editingGoalId) {
-                    setActiveGoal(prev => ({ ...prev, ...newGoal, obstacles: formattedObstacles }));
+                    setActiveGoal(prev => ({ ...prev, ...cleanedGoalData }));
                   }
                 } else {
                   const finalGoal = {
-                    ...newGoal,
+                    ...cleanedGoalData,
                     id: 'g' + Date.now(),
                     isCompleted: false,
-                    createdAt: getTodayDateString(),
-                    obstacles: formattedObstacles
+                    createdAt: getTodayDateString()
                   };
                   setGoals([finalGoal, ...goals]);
                 }
 
                 setShowAddGoal(false);
                 setEditingGoalId(null);
-                setNewGoal({ title: '', bestOutcome: '', metric: 'Puan', startValue: 0, currentValue: 0, targetValue: 100, deadline: '2026-12-31' });
-                setNewObstacles(createEmptyObstaclePlans());
+                setNewGoal({ title: '', bestOutcome: '', personalObstacle: '', mainIf: '', mainThen: '', metric: 'Soru', startValue: 0, currentValue: 0, targetValue: 300, deadline: '2026-12-31' });
               }} 
               className="w-full py-4 rounded-xl font-bold text-white bg-indigo-600 mt-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700"
             >
@@ -1462,7 +1491,7 @@ export default function App() {
             const daysLeft = getDaysRemaining(goal.deadline);
             const goalSessions = sessions.filter(s => s.goalId === goal.id);
             const totalMinutesStudied = goalSessions.reduce((acc, s) => acc + s.actualMin, 0);
-            const metricDisplay = t.metrics[goal.metric] ? goal.metric : goal.metric;
+            const metricDisplay = getMetricLabel(goal.metric);
 
             return (
               <div 
@@ -1553,25 +1582,26 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Hayal ve Eğer-O Zaman Özeti */}
+                {/* MCII (WOOP) Özeti: En İyi Sonuç, Kişisel İçsel Engel ve Ana Plan */}
                 <div className="space-y-2">
-                  <div className="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100 flex items-start gap-2">
-                    <BookOpen className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <p className="text-xs text-slate-600"><strong className="text-slate-700">{t.bestOutcomeLabel}</strong> "{goal.bestOutcome}"</p>
-                  </div>
-                  {goal.obstacles && goal.obstacles.length > 0 && (
-                    <div className="bg-amber-50/60 p-2.5 rounded-xl border border-amber-100">
-                      <p className="text-[11px] font-bold text-amber-800 mb-1.5">{t.mciiPlansLabel}</p>
-                      {goal.obstacles.map((obs) => (
-                        <p key={obs.id} className="text-xs text-slate-600 leading-snug mb-1.5 last:mb-0">
-                          {obs.category && (
-                            <span className="inline-block text-[10px] font-extrabold text-indigo-700 bg-indigo-100 px-1.5 py-0.5 rounded mr-1.5">
-                              {getCategoryLabel(obs.category)}
-                            </span>
-                          )}
-                          <strong>{t.ifTag}</strong> {obs.if} → <strong>{t.thenTag}</strong> {obs.then}
-                        </p>
-                      ))}
+                  {goal.bestOutcome && (
+                    <div className="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100 flex items-start gap-2">
+                      <BookOpen className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-slate-600"><strong className="text-slate-700">{t.bestOutcomeLabel}</strong> "{goal.bestOutcome}"</p>
+                    </div>
+                  )}
+                  {goal.personalObstacle && (
+                    <div className="bg-rose-50/60 p-2.5 rounded-xl border border-rose-100 flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                      <p className="text-xs text-slate-600"><strong className="text-rose-800">{t.personalObstacleLabel}</strong> {goal.personalObstacle}</p>
+                    </div>
+                  )}
+                  {(goal.mainIf || goal.mainThen) && (
+                    <div className="bg-amber-50/70 p-2.5 rounded-xl border border-amber-200/70">
+                      <p className="text-[11px] font-extrabold text-amber-900 mb-1">{t.mciiPlansLabel}</p>
+                      <p className="text-xs text-slate-700 leading-snug">
+                        <strong>{t.ifTag}</strong> {goal.mainIf} → <strong>{t.thenTag}</strong> {goal.mainThen}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -1661,6 +1691,30 @@ export default function App() {
                 />
               </div>
 
+              {activeGoal && (activeGoal.bestOutcome || activeGoal.personalObstacle || activeGoal.mainIf) && (
+                <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-1.5">
+                  <p className="text-[11px] font-extrabold text-indigo-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                    {t.preSessionMciiTitle}
+                  </p>
+                  {activeGoal.bestOutcome && (
+                    <p className="text-xs text-slate-600 leading-snug">
+                      <strong className="text-emerald-700">{t.bestOutcomeLabel}</strong> {activeGoal.bestOutcome}
+                    </p>
+                  )}
+                  {activeGoal.personalObstacle && (
+                    <p className="text-xs text-slate-600 leading-snug">
+                      <strong className="text-rose-700">{t.personalObstacleLabel}</strong> {activeGoal.personalObstacle}
+                    </p>
+                  )}
+                  {(activeGoal.mainIf || activeGoal.mainThen) && (
+                    <p className="text-xs text-slate-700 leading-snug pt-0.5">
+                      <strong className="text-amber-700">{t.ifTag}:</strong> {activeGoal.mainIf} → <strong className="text-emerald-700">{t.thenTag}:</strong> {activeGoal.mainThen}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <button 
                 onClick={() => {
                   if (!activeGoal) {
@@ -1737,27 +1791,47 @@ export default function App() {
           </div>
         </div>
 
-        {/* MCII EĞER-O ZAMAN MÜDAHALE KARTI */}
+        {/* BİRLEŞİK MÜDAHALE KARTI: STANDART DİKKAT MÜDAHALESİ + KİŞİSEL MCII HATIRLATMASI */}
         {activeObstacle && !isRunning && (
           <div className="bg-amber-500/15 border border-amber-500/40 p-4 rounded-2xl my-4 max-w-md w-full mx-auto">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
-              <div>
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <p className="text-amber-300 text-xs font-extrabold uppercase tracking-wider">{t.distractedHeader}</p>
+              <div className="flex-1">
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                  <p className="text-amber-300 text-xs font-extrabold uppercase tracking-wider">{t.quickActionBadge}</p>
                   {activeObstacle.category && (
                     <span className="text-[10px] font-extrabold bg-amber-400/20 text-amber-200 px-2 py-0.5 rounded-full border border-amber-400/30">
                       {getCategoryLabel(activeObstacle.category)}
                     </span>
                   )}
                 </div>
-                <p className="text-white text-xs mb-1"><strong className="text-amber-400">{t.ifTag}:</strong> {activeObstacle.if}</p>
-                <p className="text-white text-xs font-bold"><strong className="text-emerald-400">{t.thenTag}:</strong> {activeObstacle.then}</p>
+                <p className="text-white text-xs sm:text-sm font-semibold leading-relaxed">
+                  {activeObstacle.intervention}
+                </p>
+
+                {/* Kişisel MCII Hatırlatması (Birleşik Alt Bölüm) */}
+                {(activeObstacle.personalObstacle || activeObstacle.mainIf || activeObstacle.mainThen) && (
+                  <div className="mt-3 pt-2.5 border-t border-amber-400/25 space-y-1">
+                    <p className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-300">
+                      {t.mciiReminderBadge}
+                    </p>
+                    {activeObstacle.personalObstacle && (
+                      <p className="text-slate-200 text-xs leading-snug">
+                        <strong className="text-rose-300">{t.personalObstacleLabel}</strong> {activeObstacle.personalObstacle}
+                      </p>
+                    )}
+                    {(activeObstacle.mainIf || activeObstacle.mainThen) && (
+                      <p className="text-slate-100 text-xs leading-snug">
+                        <strong className="text-amber-300">{t.ifTag}:</strong> {activeObstacle.mainIf} → <strong className="text-emerald-300">{t.thenTag}:</strong> {activeObstacle.mainThen}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             <button 
               onClick={() => { setActiveObstacle(null); setIsRunning(true); }}
-              className="w-full mt-3 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-extrabold text-xs transition-colors"
+              className="w-full mt-3.5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-extrabold text-xs transition-colors"
             >
               {t.resumeAfterPlanBtn}
             </button>
@@ -1829,10 +1903,10 @@ export default function App() {
                     <span className="text-xs font-extrabold text-indigo-900">{t.progressReminderTitle}</span>
                   </div>
                   <p className="text-[11px] text-indigo-700 mb-2">
-                    {t.progressReminderHint(activeGoal.currentValue, activeGoal.targetValue, activeGoal.metric)}
+                    {t.progressReminderHint(activeGoal.currentValue, activeGoal.targetValue, getMetricLabel(activeGoal.metric))}
                   </p>
                   <label className="text-[11px] font-bold text-slate-700 block mb-1">
-                    {t.progressReminderLabel(activeGoal.metric)}
+                    {t.progressReminderLabel(getMetricLabel(activeGoal.metric))}
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -1843,11 +1917,11 @@ export default function App() {
                       value={sessionProgressDelta}
                       onChange={(e) => setSessionProgressDelta(e.target.value)}
                     />
-                    <span className="text-xs font-bold text-slate-600">{activeGoal.metric}</span>
+                    <span className="text-xs font-bold text-slate-600">{getMetricLabel(activeGoal.metric)}</span>
                   </div>
                   {Number(sessionProgressDelta) > 0 && (
                     <p className="text-[11px] font-extrabold text-emerald-700 mt-1.5">
-                      {t.progressPreview((Number(activeGoal.currentValue) || 0) + Number(sessionProgressDelta), activeGoal.metric)}
+                      {t.progressPreview((Number(activeGoal.currentValue) || 0) + Number(sessionProgressDelta), getMetricLabel(activeGoal.metric))}
                     </p>
                   )}
                 </div>
@@ -2101,7 +2175,7 @@ export default function App() {
             >
               <option value="all">{t.allGoalsOption}</option>
               {goals.map(g => (
-                <option key={g.id} value={g.id}>{g.title} ({g.currentValue}/{g.targetValue} {g.metric})</option>
+                <option key={g.id} value={g.id}>{g.title} ({g.currentValue}/{g.targetValue} {getMetricLabel(g.metric)})</option>
               ))}
             </select>
           </div>
@@ -2372,6 +2446,42 @@ export default function App() {
                 className="flex-1 py-3 rounded-xl font-bold text-xs text-white bg-red-600 hover:bg-red-700"
               >
                 {t.confirmDeleteBtn}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TÜMÜNÜ TEMİZLE ONAY MODALI */}
+      {showClearAllModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl p-6 max-w-sm w-full text-center shadow-xl">
+            <div className="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+              <Trash2 className="w-6 h-6" />
+            </div>
+            <h3 className="font-extrabold text-slate-800 text-base mb-1">{t.clearAllModalTitle}</h3>
+            <p className="text-xs text-slate-500 mb-5 leading-relaxed">
+              {t.clearAllModalDesc}
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setShowClearAllModal(false)}
+                className="flex-1 py-3 rounded-xl font-bold text-xs text-slate-600 bg-slate-100 hover:bg-slate-200"
+              >
+                {t.cancelBtn}
+              </button>
+              <button
+                onClick={() => {
+                  setGoals([]);
+                  setSessions([]);
+                  setActiveGoal(null);
+                  resetSessionState();
+                  setSelectedReportGoalId('all');
+                  setShowClearAllModal(false);
+                }}
+                className="flex-1 py-3 rounded-xl font-bold text-xs text-white bg-red-600 hover:bg-red-700"
+              >
+                {t.confirmClearAllBtn}
               </button>
             </div>
           </div>
