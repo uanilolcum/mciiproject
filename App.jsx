@@ -132,6 +132,17 @@ const TRANSLATIONS = {
     progressReminderLabel: (metric) => `Bu seansta hedefine kaç ${metric} ekledin? (İsteğe Bağlı)`,
     progressReminderHint: (curr, target, metric) => `Mevcut: ${curr} / ${target} ${metric}`,
     progressPreview: (nextVal, metric) => `Kaydedilince yeni değer: ${nextVal} ${metric}`,
+    mciiFidelityQuestion: 'BU SEANSTA KİŞİSEL ENGELİNLE KARŞILAŞTIĞINDA MCII (EĞER–O ZAMAN) PLANINI UYGULADIN MI?',
+    mciiOptYes: 'Evet, uyguladım',
+    mciiOptPartial: 'Kısmen uyguladım',
+    mciiOptNo: 'Hayır, uygulamadım',
+    mciiOptNotEncountered: 'Engelimle karşılaşmadım',
+    errSelectMciiFidelity: 'Lütfen MCII planını uygulama durumunu seç.',
+    cardMciiFidelity: 'MCII Uygulama Sadakati',
+    fidelitySummaryTitle: 'MCII Uygulama Sadakati Özeti',
+    fidelityBreakdown: (y, p, n, ne) => `Evet: ${y} • Kısmen: ${p} • Hayır: ${n} • Karşılaşmadı: ${ne}`,
+    fidelityNoEncountered: 'Henüz kişisel engel yaşanan seans kaydı yok.',
+    fidelityCol: 'Sadakat %',
     goBackBtn: 'Geri Dön',
     saveAndReportBtn: 'Kaydet ve Raporu Gör',
     noNoteDefault: 'Not eklenmedi.',
@@ -361,6 +372,17 @@ const TRANSLATIONS = {
     progressReminderLabel: (metric) => `How many ${metric} did you add in this session? (Optional)`,
     progressReminderHint: (curr, target, metric) => `Current: ${curr} / ${target} ${metric}`,
     progressPreview: (nextVal, metric) => `New total after saving: ${nextVal} ${metric}`,
+    mciiFidelityQuestion: 'WHEN YOU FACED YOUR PERSONAL OBSTACLE IN THIS SESSION, DID YOU APPLY YOUR MCII (IF–THEN) PLAN?',
+    mciiOptYes: 'Yes, applied',
+    mciiOptPartial: 'Partially applied',
+    mciiOptNo: 'No, not applied',
+    mciiOptNotEncountered: 'Didn’t face obstacle',
+    errSelectMciiFidelity: 'Please select whether you applied your MCII plan.',
+    cardMciiFidelity: 'MCII Plan Fidelity',
+    fidelitySummaryTitle: 'MCII Implementation Fidelity Summary',
+    fidelityBreakdown: (y, p, n, ne) => `Yes: ${y} • Partial: ${p} • No: ${n} • Not faced: ${ne}`,
+    fidelityNoEncountered: 'No sessions where the personal obstacle was encountered yet.',
+    fidelityCol: 'Fidelity %',
     goBackBtn: 'Go Back',
     saveAndReportBtn: 'Save & View Report',
     noNoteDefault: 'No notes added.',
@@ -512,6 +534,7 @@ const INITIAL_SESSIONS = [
     totalElapsedSeconds: 3600,
     pausedSeconds: 900,
     completedByTimeLimit: true,
+    mciiApplied: 'partial',
     rating: 6, 
     notes: 'İlk 25 dakika çok iyiydi ama sonra telefon bildirimleri dikkatimi dağıttı.',
     distractions: { 'Telefon/Bildirim': 3, 'Hayal Kurma': 1, 'Görev Değiştirme': 0, 'Diğer': 1 } 
@@ -528,6 +551,7 @@ const INITIAL_SESSIONS = [
     totalElapsedSeconds: 3000,
     pausedSeconds: 120,
     completedByTimeLimit: true,
+    mciiApplied: 'yes',
     rating: 9, 
     notes: 'Sabah çalışmak çok verimli oldu, telefonu diğer odaya bıraktım.',
     distractions: { 'Telefon/Bildirim': 0, 'Hayal Kurma': 1, 'Görev Değiştirme': 0, 'Diğer': 0 } 
@@ -544,6 +568,7 @@ const INITIAL_SESSIONS = [
     totalElapsedSeconds: 3600,
     pausedSeconds: 300,
     completedByTimeLimit: true,
+    mciiApplied: 'not_encountered',
     rating: 8, 
     notes: 'Olimpiyat soruları zorlayıcıydı ama odaklanmamı korudum.',
     distractions: { 'Telefon/Bildirim': 1, 'Hayal Kurma': 1, 'Görev Değiştirme': 0, 'Diğer': 1 } 
@@ -560,6 +585,7 @@ const INITIAL_SESSIONS = [
     totalElapsedSeconds: 2700,
     pausedSeconds: 600,
     completedByTimeLimit: true,
+    mciiApplied: 'yes',
     rating: 7, 
     notes: 'Akşam saatinde yorgundum ama MCII planını uygulayarak toparladım.',
     distractions: { 'Telefon/Bildirim': 1, 'Hayal Kurma': 2, 'Görev Değiştirme': 1, 'Diğer': 0 } 
@@ -664,6 +690,8 @@ export default function App() {
   const [sessionRating, setSessionRating] = useState(8);
   const [sessionNotes, setSessionNotes] = useState('');
   const [sessionProgressDelta, setSessionProgressDelta] = useState('');
+  const [sessionMciiApplied, setSessionMciiApplied] = useState('');
+  const [endModalError, setEndModalError] = useState('');
 
   // Yeni Hedef Ekleme ve Düzenleme State'leri
   const [showAddGoal, setShowAddGoal] = useState(false);
@@ -736,6 +764,8 @@ export default function App() {
     setActiveObstacle(null);
     setShowEndModal(false);
     setSessionProgressDelta('');
+    setSessionMciiApplied('');
+    setEndModalError('');
     lastTickRef.current = null;
     totalAccSecRef.current = 0;
     activeAccSecRef.current = 0;
@@ -885,6 +915,37 @@ export default function App() {
     return (t.metricsShort && t.metricsShort[metricKey]) ? t.metricsShort[metricKey] : metricKey;
   };
 
+  const getMciiAppliedLabel = (val) => {
+    if (val === 'yes') return t.mciiOptYes;
+    if (val === 'partial') return t.mciiOptPartial;
+    if (val === 'no') return t.mciiOptNo;
+    if (val === 'not_encountered') return t.mciiOptNotEncountered;
+    return '';
+  };
+
+  const getSessionFidelityScore = (val) => {
+    if (val === 'yes') return 100;
+    if (val === 'partial') return 50;
+    if (val === 'no') return 0;
+    return null;
+  };
+
+  const calculateFidelityStats = (sessionsList) => {
+    let yes = 0;
+    let partial = 0;
+    let no = 0;
+    let notEncountered = 0;
+    (sessionsList || []).forEach(s => {
+      if (s.mciiApplied === 'yes') yes += 1;
+      else if (s.mciiApplied === 'partial') partial += 1;
+      else if (s.mciiApplied === 'no') no += 1;
+      else if (s.mciiApplied === 'not_encountered') notEncountered += 1;
+    });
+    const encountered = yes + partial + no;
+    const rate = encountered > 0 ? Math.round(((yes + partial * 0.5) / encountered) * 100) : null;
+    return { yes, partial, no, notEncountered, encountered, rate };
+  };
+
   // --- EXCEL / CSV DIŞA AKTARMA (RUMUZ İLE ADLANDIRILMIŞ, SPSS & EXCEL UYUMLU) ---
   const handleExportCSV = () => {
     if (sessions.length === 0) {
@@ -909,7 +970,7 @@ export default function App() {
           'Ders_Konu', 'Planlanan_Dk', 'Aktif_Calisma_Dk', 'Aktif_Calisma_Sn', 'Toplam_Blok_Sn',
           'Kopma_Suresi_Sn', 'Kopma_Suresi_Dk', 'Gercek_Calisma_Orani_Yuzde',
           'Kopma_Telefon_Bildirim', 'Kopma_Hayal_Kurma', 'Kopma_Gorev_Degistirme', 'Kopma_Diger',
-          'Toplam_Kopma_Sayisi', 'Sure_Doldu_Mu', 'Seans_Eklenen_Ilerleme', 'Verim_Puani_10', 'Seans_Notu'
+          'Toplam_Kopma_Sayisi', 'Sure_Doldu_Mu', 'Seans_Eklenen_Ilerleme', 'MCII_Plani_Uygulandi_Mi', 'Seans_MCII_Sadakat_Yuzde', 'Genel_MCII_Sadakat_Yuzde', 'Verim_Puani_10', 'Seans_Notu'
         ]
       : [
           'Alias', 'Target_Field', 'Session_ID', 'Week_No', 'Date', 'Start_Time', 'Time_Slot',
@@ -917,7 +978,7 @@ export default function App() {
           'Subject_Topic', 'Planned_Min', 'Active_Study_Min', 'Active_Study_Sec', 'Total_Block_Sec',
           'Distraction_Duration_Sec', 'Distraction_Duration_Min', 'Actual_Study_Rate_Pct',
           'Dist_Phone_Notification', 'Dist_Daydreaming', 'Dist_Task_Switching', 'Dist_Other',
-          'Total_Distractions', 'Completed_By_Time_Limit', 'Session_Progress_Added', 'Efficiency_Rating_10', 'Session_Notes'
+          'Total_Distractions', 'Completed_By_Time_Limit', 'Session_Progress_Added', 'MCII_Plan_Applied', 'Session_MCII_Fidelity_Pct', 'Overall_MCII_Fidelity_Pct', 'Efficiency_Rating_10', 'Session_Notes'
         ];
 
     const sortedSessions = [...sessions].sort((a, b) => {
@@ -925,6 +986,9 @@ export default function App() {
       const db = `${b.date} ${b.startTime}`;
       return da.localeCompare(db);
     });
+
+    const overallFidelityStats = calculateFidelityStats(sortedSessions);
+    const overallFidelityPct = overallFidelityStats.rate !== null ? overallFidelityStats.rate : '';
 
     const rows = sortedSessions.map(s => {
       const goalObj = goals.find(g => g.id === s.goalId);
@@ -979,6 +1043,9 @@ export default function App() {
         dTotal,
         timeLimitStr,
         s.progressAdded || 0,
+        getMciiAppliedLabel(s.mciiApplied),
+        getSessionFidelityScore(s.mciiApplied) !== null ? getSessionFidelityScore(s.mciiApplied) : '',
+        overallFidelityPct,
         s.rating,
         s.notes || ''
       ].map(escapeCell).join(delimiter);
@@ -1075,6 +1142,11 @@ export default function App() {
   };
 
   const handleFinishSessionConfirm = () => {
+    if (!sessionMciiApplied) {
+      setEndModalError(t.errSelectMciiFidelity);
+      return;
+    }
+    setEndModalError('');
     const plannedMins = Math.max(1, Number(plannedTime) || 30);
     const actualMinutes = Math.min(plannedMins, Math.round(elapsedTime / 60));
     const pausedSeconds = Math.max(0, totalElapsedTime - elapsedTime);
@@ -1093,6 +1165,7 @@ export default function App() {
       pausedSeconds: pausedSeconds,
       completedByTimeLimit: isTimeUp,
       progressAdded: addedProgress,
+      mciiApplied: sessionMciiApplied,
       rating: sessionRating,
       notes: sessionNotes.trim() || t.noNoteDefault,
       distractions: { ...currentDistractions }
@@ -1883,7 +1956,7 @@ export default function App() {
         {/* BÖLÜM 3: SEANS SONU DEĞERLENDİRME MODALI */}
         {showEndModal && (
           <div className="fixed inset-0 bg-black/75 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl p-6 max-w-md w-full">
+            <div className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[92vh] overflow-y-auto">
               {isTimeUp && (
                 <div className="mb-3 p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-extrabold flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -1926,6 +1999,40 @@ export default function App() {
                   )}
                 </div>
               )}
+
+              {/* MCII PLANI UYGULAMA SADAKATİ (TREATMENT FIDELITY) SORUSU */}
+              <div className="mb-4">
+                <label className="text-[11px] font-extrabold text-slate-700 block mb-2 leading-snug">
+                  {t.mciiFidelityQuestion}
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: 'yes', label: t.mciiOptYes, activeClass: 'bg-emerald-600 text-white border-emerald-600' },
+                    { id: 'partial', label: t.mciiOptPartial, activeClass: 'bg-amber-500 text-white border-amber-500' },
+                    { id: 'no', label: t.mciiOptNo, activeClass: 'bg-rose-600 text-white border-rose-600' },
+                    { id: 'not_encountered', label: t.mciiOptNotEncountered, activeClass: 'bg-slate-700 text-white border-slate-700' }
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => {
+                        setSessionMciiApplied(opt.id);
+                        setEndModalError('');
+                      }}
+                      className={`py-2.5 px-2.5 rounded-xl text-xs font-bold border text-center transition-all ${
+                        sessionMciiApplied === opt.id
+                          ? opt.activeClass
+                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {endModalError && (
+                  <p className="text-[11px] font-bold text-red-600 mt-1.5">{endModalError}</p>
+                )}
+              </div>
 
               <div className="mb-4">
                 <label className="text-xs font-bold text-slate-700 block mb-2">
@@ -2081,6 +2188,9 @@ export default function App() {
       ? Math.round((filteredSessions.reduce((acc, s) => acc + s.rating, 0) / (filteredSessions.length * 10)) * 100)
       : 0;
 
+    // MCII Uygulama Sadakati Özeti
+    const fidelityStats = calculateFidelityStats(filteredSessions);
+
     // Kopma süresi özeti
     const totalPausedSeconds = filteredSessions.reduce((acc, s) => acc + getSessionPausedSeconds(s), 0);
     const avgPausedSeconds = filteredSessions.length > 0 ? Math.round(totalPausedSeconds / filteredSessions.length) : 0;
@@ -2090,7 +2200,7 @@ export default function App() {
     filteredSessions.forEach(s => {
       const w = getWeekNumberForSession(s.date, sessions);
       if (!weeklyMap[w]) {
-        weeklyMap[w] = { week: w, count: 0, plannedMin: 0, actualMin: 0, pausedSec: 0, ratingSum: 0, distCount: 0 };
+        weeklyMap[w] = { week: w, count: 0, plannedMin: 0, actualMin: 0, pausedSec: 0, ratingSum: 0, distCount: 0, fidScoreSum: 0, fidCount: 0 };
       }
       weeklyMap[w].count += 1;
       weeklyMap[w].plannedMin += s.plannedMin || 0;
@@ -2098,6 +2208,11 @@ export default function App() {
       weeklyMap[w].pausedSec += getSessionPausedSeconds(s);
       weeklyMap[w].ratingSum += s.rating || 0;
       weeklyMap[w].distCount += Object.values(s.distractions || {}).reduce((a, b) => a + b, 0);
+      const fScore = getSessionFidelityScore(s.mciiApplied);
+      if (fScore !== null) {
+        weeklyMap[w].fidScoreSum += fScore;
+        weeklyMap[w].fidCount += 1;
+      }
     });
     const weeklyRows = Object.values(weeklyMap).sort((a, b) => a.week - b.week);
 
@@ -2214,8 +2329,8 @@ export default function App() {
           </p>
         </div>
 
-        {/* 3 ANA ORAN KARTI */}
-        <div className="grid grid-cols-3 gap-3">
+        {/* 4 ANA ORAN KARTI (2x2) */}
+        <div className="grid grid-cols-2 gap-3">
           <div className="bg-white p-3.5 rounded-2xl text-center shadow-sm border border-slate-100">
             <div className="text-xl font-black text-indigo-600">%{avgGoalAttainment}</div>
             <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">{t.cardGoalAttainment}</div>
@@ -2228,6 +2343,26 @@ export default function App() {
             <div className="text-xl font-black text-amber-500">%{avgRatingPercent}</div>
             <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">{t.cardSessionEff}</div>
           </div>
+          <div className="bg-white p-3.5 rounded-2xl text-center shadow-sm border border-violet-100">
+            <div className="text-xl font-black text-violet-600">
+              {fidelityStats.rate !== null ? `%${fidelityStats.rate}` : '-'}
+            </div>
+            <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">{t.cardMciiFidelity}</div>
+          </div>
+        </div>
+
+        {/* MCII UYGULAMA SADAKATİ DAĞILIMI */}
+        <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+          <h3 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider mb-1.5">
+            {t.fidelitySummaryTitle}
+          </h3>
+          {fidelityStats.encountered > 0 || fidelityStats.notEncountered > 0 ? (
+            <p className="text-xs font-semibold text-slate-600">
+              {t.fidelityBreakdown(fidelityStats.yes, fidelityStats.partial, fidelityStats.no, fidelityStats.notEncountered)}
+            </p>
+          ) : (
+            <p className="text-xs text-slate-400">{t.fidelityNoEncountered}</p>
+          )}
         </div>
 
         {/* KOPMA SÜRESİ ÖZETİ */}
@@ -2266,12 +2401,14 @@ export default function App() {
                     <th className="py-2 px-1 text-center">{t.activeMinCol}</th>
                     <th className="py-2 px-1 text-center">{t.pauseMinCol}</th>
                     <th className="py-2 px-1 text-center">{t.effCol}</th>
+                    <th className="py-2 px-1 text-center">{t.fidelityCol}</th>
                     <th className="py-2 pl-1 text-center">{t.ratingCol}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
                   {weeklyRows.map(row => {
                     const weekEff = row.plannedMin > 0 ? Math.min(100, Math.round((row.actualMin / row.plannedMin) * 100)) : 0;
+                    const weekFid = row.fidCount > 0 ? `%${Math.round(row.fidScoreSum / row.fidCount)}` : '-';
                     const weekRating = row.count > 0 ? (row.ratingSum / row.count).toFixed(1) : '-';
                     const weekPauseMin = Math.round(row.pausedSec / 60);
                     return (
@@ -2281,6 +2418,7 @@ export default function App() {
                         <td className="py-2.5 px-1 text-center font-semibold text-emerald-700">{row.actualMin}</td>
                         <td className="py-2.5 px-1 text-center font-semibold text-rose-600">{weekPauseMin}</td>
                         <td className="py-2.5 px-1 text-center font-extrabold text-indigo-600">%{weekEff}</td>
+                        <td className="py-2.5 px-1 text-center font-extrabold text-violet-600">{weekFid}</td>
                         <td className="py-2.5 pl-1 text-center font-bold text-amber-600">{weekRating}</td>
                       </tr>
                     );
@@ -2403,6 +2541,21 @@ export default function App() {
                       {t.effBadge} {session.rating}/10
                     </span>
                   </div>
+                  {session.mciiApplied && (
+                    <div className="mt-1.5">
+                      <span className={`inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
+                        session.mciiApplied === 'yes'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : session.mciiApplied === 'partial'
+                          ? 'bg-amber-100 text-amber-700'
+                          : session.mciiApplied === 'no'
+                          ? 'bg-rose-100 text-rose-700'
+                          : 'bg-slate-200 text-slate-600'
+                      }`}>
+                        MCII: {getMciiAppliedLabel(session.mciiApplied)}
+                      </span>
+                    </div>
+                  )}
                   {session.notes && (
                     <p className="text-xs text-slate-600 italic bg-white p-2.5 rounded-xl border border-slate-100 mt-2">
                       "{session.notes}"
