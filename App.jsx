@@ -23,9 +23,18 @@ const EMPTY_DISTRACTIONS = {
 const TRANSLATIONS = {
   tr: {
     appName: 'MCII Odak Koçu',
+    appNameNeutral: 'Odak ve Çalışma Koçu',
+    appNameControl: 'Odak ve Zaman Etüdü',
     onboardingSubtitle: 'Hedeflerini sayısal olarak belirle, engellerini öngör ve bilimsel MCII tekniğiyle odaklanma süreni zirveye taşı.',
+    onboardingSubtitleNeutral: 'Rumuzunu gir, sana verilen grubu seç ve 3 haftalık hedef takip sürecine hemen başla.',
+    onboardingSubtitleControl: 'Hedeflerini sayısal olarak belirle, kronometre ve dikkat takibiyle çalışma verimini ölç.',
     aliasLabel: 'RUMUZUN / TAKMA ADIN',
     aliasPlaceholder: 'Örn: Odak01, Yıldız, Ö1...',
+    groupLabel: 'ÇALIŞMA GRUBUN',
+    groupExperimentLabel: 'Grup A',
+    groupControlLabel: 'Grup B',
+    groupExperimentShort: 'Deney',
+    groupControlShort: 'Kontrol',
     fieldLabel: 'HEDEF ALANIN (İSTEĞE BAĞLI)',
     fieldPlaceholder: 'Örn: Sayısal / YKS / Olimpiyat',
     continueBtn: 'Devam Et',
@@ -33,8 +42,12 @@ const TRANSLATIONS = {
     welcomeSubtitle: 'Uygulamayı nasıl kullanacağına hızlıca göz atalım.',
     step1Title: 'MCII (WOOP) ile Hedef ve İçsel Engel Planı Kur',
     step1Desc: 'Somut 3 haftalık hedefini belirle, en iyi sonucu zihninde canlandır, seni en çok zorlayabilecek kişisel içsel engelini fark et ve bu engel için kendi "Eğer… O Zaman…" planını oluştur.',
+    step1TitleControl: 'Sayısal Hedef ve Süre Belirle',
+    step1DescControl: 'Sadece "ders çalışacağım" demek yerine; başlangıç değerini, 3 haftalık hedef değerini (örn. 0’dan 300 soruya) ve bitiş tarihini gir.',
     step2Title: 'Zaman Etüdü ve Birleşik Dikkat Müdahalesi',
     step2Desc: 'Seansa başla. Çalışırken telefon, hayal kurma, görev değiştirme veya diğer bir nedenle dersten koparsan ilgili butona bas. Aktif çalışma sayacı durur; o dikkat dağıtıcıya özel hızlı eylem ile kendi MCII planın birlikte karşına gelir!',
+    step2TitleControl: 'Akıllı Kronometre ve Zaman Etüdü',
+    step2DescControl: 'Seansa başla. Çalışırken telefon, hayal kurma, görev değiştirme veya diğer bir nedenle dersten koparsan ilgili butona bas. Aktif çalışma sayacı durur; derse dönmeye hazır olduğunda tekrar başlat.',
     step3Title: 'Haftalık Analiz ve Excel Veri Dışa Aktarma',
     step3Desc: '1., 2. ve 3. hafta gelişimini, kopma sürelerini ve verimlilik oranlarını incele. Çalışma sonunda tüm verilerini tek tıkla Excel (CSV) formatında indir.',
     startAppBtn: 'Uygulamaya Başla',
@@ -45,10 +58,15 @@ const TRANSLATIONS = {
     editHintBar: 'Hedefleri kalem ikonundan düzenleyebilir veya silebilirsin.',
     clearAllBtn: 'Tümünü Temizle',
     editGoalTitle: 'Hedefi ve MCII Planını Düzenle',
+    editGoalTitleControl: 'Hedefi Düzenle',
     newGoalTitle: 'MCII Hedef Planlama Formu',
+    newGoalTitleControl: 'Hedef Planlama Formu',
     editGoalSub: 'Hedef bilgilerini, kişisel içsel engelini ve ana MCII planını güncelle.',
+    editGoalSubControl: 'Hedef bilgilerini ve sayısal değerlerini güncelle.',
     newGoalSub: 'MCII (WOOP) aşamalarını izleyerek somut, ölçülebilir bir hedef oluştur.',
+    newGoalSubControl: 'Somut, ölçülebilir ve 3 haftalık zamana bağlı bir hedef oluştur.',
     goalStep1: 'ADIM 1: SOMUT HEDEFİN NEDİR? (WISH)',
+    goalStep1Control: 'SOMUT HEDEFİN NEDİR?',
     goalTitlePlaceholder: 'Örn: Matematikte 3 haftada 300 soru çözmek',
     deadlineLabel: 'HEDEF BİTİŞ TARİHİ',
     metricLabel: 'ÖLÇÜM BİRİMİ',
@@ -71,8 +89,11 @@ const TRANSLATIONS = {
     thenTag: 'O ZAMAN',
     updateGoalBtn: 'Değişiklikleri Güncelle',
     saveGoalBtn: 'Hedefi ve MCII Planını Kaydet',
+    saveGoalBtnControl: 'Hedefi Kaydet',
     noGoalsTitle: 'Henüz Hiç Hedefin Yok',
     noGoalsDesc: 'Kendi çalışma hedeflerini ve "Eğer-O Zaman" planlarını oluşturarak hemen başla veya örnek verileri geri yükle.',
+    noGoalsDescControl: 'Kendi 3 haftalık çalışma hedefini oluşturarak hemen başla veya örnek hedefi yükle.',
+    controlPausedHint: 'Aktif sayaç duraklatıldı. Derse dönmeye hazır olduğunda "Tekrar Başlat" butonuna dokun.',
     createGoalBtn: 'Yeni Hedef Oluştur',
     restoreSampleBtn: 'Örnek Hedefleri Yükle',
     expired: 'Süre Doldu',
@@ -199,10 +220,15 @@ const TRANSLATIONS = {
     cancelBtn: 'Vazgeç',
     confirmDeleteBtn: 'Evet, Sil',
     guideModalTitle: 'MCII Uygulama Rehberi',
+    guideModalTitleControl: 'Uygulama Rehberi',
     guideP1Title: '1. MCII (WOOP) Hedef Planlama:',
     guideP1Body: 'Somut 3 haftalık hedefini belirler, olumlu sonucu zihninde canlandırır, seni zorlayabilecek kişisel içsel engelini yazar ve bu engel için ana "Eğer–O Zaman" planını kurarsın.',
+    guideP1TitleControl: '1. Hedef ve Süre Belirleme:',
+    guideP1BodyControl: 'Hedef kartında başlangıç ve 3 haftalık hedef değerini, ölçüm birimini ve bitiş tarihini belirlersin.',
     guideP2Title: '2. Çalışma Seansı ve Birleşik Müdahale:',
     guideP2Body: 'Seansa başlarken planladığın süreyi girersin. Dersten her koptuğunda ilgili dikkat dağıtıcıya basarsın; aktif sayaç durur, o kategoriye özel standart müdahale ile kendi MCII planın birlikte ekrana gelir. Planlanan blok süresi dolduğunda kronometre otomatik durur.',
+    guideP2TitleControl: '2. Çalışma Seansı (Zaman Etüdü):',
+    guideP2BodyControl: 'Seansa başlarken planladığın süreyi girersin. Dersten her koptuğunda ilgili çetele butonuna basarsın; aktif çalışma sayacı durur. Hazır olduğunda Tekrar Başlat butonuna basarak devam edersin. Planlanan blok süresi dolduğunda kronometre otomatik durur.',
     guideP3Title: '3. Analiz ve Excel Dışa Aktarma:',
     guideP3Body: 'Haftalık gelişimini (1.–3. hafta), kopma sürelerini ve verimlilik oranlarını takip edebilir; tüm verilerini rumuzunla adlandırılmış Excel (CSV) dosyası olarak indirebilirsin.',
     guideP4Title: '4. Gizlilik ve Kalıcı Kayıt:',
@@ -263,9 +289,18 @@ const TRANSLATIONS = {
   },
   en: {
     appName: 'MCII Focus Coach',
+    appNameNeutral: 'Focus & Study Coach',
+    appNameControl: 'Focus & Time-Study Tracker',
     onboardingSubtitle: 'Set measurable goals, anticipate obstacles, and maximize your focus using the evidence-based MCII technique.',
+    onboardingSubtitleNeutral: 'Enter your alias, select your assigned group, and begin your 3-week goal tracking.',
+    onboardingSubtitleControl: 'Set measurable goals and track your focus efficiency using structured time-study sessions.',
     aliasLabel: 'YOUR ALIAS / NICKNAME',
     aliasPlaceholder: 'e.g., Focus01, Star, P1...',
+    groupLabel: 'YOUR STUDY GROUP',
+    groupExperimentLabel: 'Group A',
+    groupControlLabel: 'Group B',
+    groupExperimentShort: 'Experimental',
+    groupControlShort: 'Control',
     fieldLabel: 'TARGET FIELD / TRACK (OPTIONAL)',
     fieldPlaceholder: 'e.g., STEM / SAT / AP / Olympiad',
     continueBtn: 'Continue',
@@ -273,8 +308,12 @@ const TRANSLATIONS = {
     welcomeSubtitle: 'Let’s take a quick look at how to use the app.',
     step1Title: 'Build Your MCII (WOOP) Goal & Internal Obstacle Plan',
     step1Desc: 'Set a measurable 3-week goal, vividly visualize the best outcome, identify your main personal (internal) obstacle, and craft your core "If… Then…" implementation intention.',
+    step1TitleControl: 'Set Measurable Goals & Deadlines',
+    step1DescControl: 'Instead of vague goals, enter your starting value, 3-week target value (e.g., 0 to 300 questions), and deadline.',
     step2Title: 'Time-Study Tracking & Unified Focus Intervention',
     step2Desc: 'Start a timed study block. Whenever phone notifications, daydreaming, task switching, or other distractions occur, tap the matching button. Active time pauses and displays both a standardized behavioral action and your personal MCII plan!',
+    step2TitleControl: 'Smart Stopwatch & Time-Study Tracking',
+    step2DescControl: 'Start a timed study block. Whenever phone notifications, daydreaming, task switching, or other distractions occur, tap the matching button. Active time pauses; tap Resume when ready to continue.',
     step3Title: 'Weekly Analytics & Excel Data Export',
     step3Desc: 'Track your Week 1–3 progress, distraction durations, and efficiency rates. Export all your anonymized data to Excel (CSV) with a single click.',
     startAppBtn: 'Start Using the App',
@@ -285,10 +324,15 @@ const TRANSLATIONS = {
     editHintBar: 'You can edit or delete goals using the icons on each card.',
     clearAllBtn: 'Clear All',
     editGoalTitle: 'Edit Goal & MCII Plans',
+    editGoalTitleControl: 'Edit Goal',
     newGoalTitle: 'MCII Goal Planning Form',
+    newGoalTitleControl: 'Goal Planning Form',
     editGoalSub: 'Update your goal targets, personal internal obstacle, and core MCII plan.',
+    editGoalSubControl: 'Update your goal details and numeric targets.',
     newGoalSub: 'Follow the MCII (WOOP) steps to create a concrete, measurable goal.',
+    newGoalSubControl: 'Create a concrete, measurable 3-week study goal.',
     goalStep1: 'STEP 1: WHAT IS YOUR CONCRETE GOAL? (WISH)',
+    goalStep1Control: 'WHAT IS YOUR CONCRETE GOAL?',
     goalTitlePlaceholder: 'e.g., Solve 300 Math problems in 3 weeks',
     deadlineLabel: 'TARGET DEADLINE',
     metricLabel: 'MEASUREMENT UNIT',
@@ -311,8 +355,11 @@ const TRANSLATIONS = {
     thenTag: 'THEN',
     updateGoalBtn: 'Update Changes',
     saveGoalBtn: 'Save Goal & MCII Plan',
+    saveGoalBtnControl: 'Save Goal',
     noGoalsTitle: 'No Goals Yet',
     noGoalsDesc: 'Create your own study goals and "If–Then" plans to get started, or restore the sample goals.',
+    noGoalsDescControl: 'Create your own 3-week study goal to get started, or load a sample goal.',
+    controlPausedHint: 'Active timer paused. Tap "Resume Timer" when you are ready to return to studying.',
     createGoalBtn: 'Create New Goal',
     restoreSampleBtn: 'Load Sample Goals',
     expired: 'Expired',
@@ -439,10 +486,15 @@ const TRANSLATIONS = {
     cancelBtn: 'Cancel',
     confirmDeleteBtn: 'Yes, Delete',
     guideModalTitle: 'MCII App User Guide',
+    guideModalTitleControl: 'App User Guide',
     guideP1Title: '1. MCII (WOOP) Goal Planning:',
     guideP1Body: 'Define your 3-week measurable goal, vividly visualize the best outcome, identify your main personal internal obstacle, and create your core "If–Then" plan.',
+    guideP1TitleControl: '1. Goal & Deadline Planning:',
+    guideP1BodyControl: 'Set your starting value, 3-week target value, measurement unit, and target deadline.',
     guideP2Title: '2. Time-Study Session & Unified Intervention:',
     guideP2Body: 'Enter your planned block duration. Tap a distraction button whenever focus breaks; active time pauses and displays both a standardized behavioral action and your personal MCII plan. The timer automatically stops when your planned block ends.',
+    guideP2TitleControl: '2. Time-Study Session:',
+    guideP2BodyControl: 'Enter your planned block duration. Tap a distraction button whenever focus breaks; active time pauses. Tap Resume Timer when ready to continue. The timer automatically stops when your planned block ends.',
     guideP3Title: '3. Analytics & Excel Export:',
     guideP3Body: 'Monitor your Week 1–3 progress, distraction durations, and efficiency rates, and export all records as an alias-labeled Excel (CSV) file.',
     guideP4Title: '4. Privacy & Local Storage:',
@@ -623,11 +675,21 @@ export default function App() {
     return localStorage.getItem('mcii_userGrade') || '';
   });
 
+  const [studyGroup, setStudyGroup] = useState(() => {
+    const saved = localStorage.getItem('mcii_studyGroup');
+    if (saved === 'control' || saved === 'experiment') return saved;
+    const savedStep = localStorage.getItem('mcii_onboardingStep');
+    return savedStep === '2' ? 'experiment' : '';
+  });
+
+  const isControlGroup = studyGroup === 'control';
+
   const [onboardingStep, setOnboardingStep] = useState(() => {
     const savedStep = localStorage.getItem('mcii_onboardingStep');
     const savedName = localStorage.getItem('mcii_userName');
+    const savedGroup = localStorage.getItem('mcii_studyGroup');
     if (savedStep !== null) return Number(savedStep);
-    return savedName ? 2 : 0;
+    return (savedName && savedGroup) ? 2 : 0;
   });
 
   const [goals, setGoals] = useState(() => {
@@ -659,6 +721,12 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('mcii_userGrade', userGrade);
   }, [userGrade]);
+
+  useEffect(() => {
+    if (studyGroup) {
+      localStorage.setItem('mcii_studyGroup', studyGroup);
+    }
+  }, [studyGroup]);
 
   useEffect(() => {
     localStorage.setItem('mcii_onboardingStep', String(onboardingStep));
@@ -965,7 +1033,7 @@ export default function App() {
 
     const headers = lang === 'tr'
       ? [
-          'Rumuz', 'Hedef_Alani', 'Seans_ID', 'Hafta_No', 'Tarih', 'Baslangic_Saati', 'Zaman_Dilimi',
+          'Rumuz', 'Grup', 'Hedef_Alani', 'Seans_ID', 'Hafta_No', 'Tarih', 'Baslangic_Saati', 'Zaman_Dilimi',
           'Hedef_Adi', 'En_Iyi_Sonuc', 'Kisisel_Icsel_Engel', 'Ana_MCII_Eger', 'Ana_MCII_OZaman', 'Hedef_Birimi', 'Hedef_Baslangic', 'Hedef_Guncel', 'Hedef_Deger', 'Hedefe_Ulasma_Yuzde',
           'Ders_Konu', 'Planlanan_Dk', 'Aktif_Calisma_Dk', 'Aktif_Calisma_Sn', 'Toplam_Blok_Sn',
           'Kopma_Suresi_Sn', 'Kopma_Suresi_Dk', 'Gercek_Calisma_Orani_Yuzde',
@@ -973,7 +1041,7 @@ export default function App() {
           'Toplam_Kopma_Sayisi', 'Sure_Doldu_Mu', 'Seans_Eklenen_Ilerleme', 'MCII_Plani_Uygulandi_Mi', 'Seans_MCII_Sadakat_Yuzde', 'Genel_MCII_Sadakat_Yuzde', 'Verim_Puani_10', 'Seans_Notu'
         ]
       : [
-          'Alias', 'Target_Field', 'Session_ID', 'Week_No', 'Date', 'Start_Time', 'Time_Slot',
+          'Alias', 'Group', 'Target_Field', 'Session_ID', 'Week_No', 'Date', 'Start_Time', 'Time_Slot',
           'Goal_Title', 'Best_Outcome', 'Personal_Internal_Obstacle', 'Main_MCII_If', 'Main_MCII_Then', 'Goal_Metric', 'Goal_Start', 'Goal_Current', 'Goal_Target', 'Goal_Attainment_Pct',
           'Subject_Topic', 'Planned_Min', 'Active_Study_Min', 'Active_Study_Sec', 'Total_Block_Sec',
           'Distraction_Duration_Sec', 'Distraction_Duration_Min', 'Actual_Study_Rate_Pct',
@@ -988,7 +1056,8 @@ export default function App() {
     });
 
     const overallFidelityStats = calculateFidelityStats(sortedSessions);
-    const overallFidelityPct = overallFidelityStats.rate !== null ? overallFidelityStats.rate : '';
+    const overallFidelityPct = (!isControlGroup && overallFidelityStats.rate !== null) ? overallFidelityStats.rate : '';
+    const groupExportValue = isControlGroup ? t.groupControlShort : t.groupExperimentShort;
 
     const rows = sortedSessions.map(s => {
       const goalObj = goals.find(g => g.id === s.goalId);
@@ -1012,6 +1081,7 @@ export default function App() {
 
       return [
         userName || 'Ogrenci',
+        groupExportValue,
         userGrade || '',
         s.id,
         weekNo,
@@ -1019,10 +1089,10 @@ export default function App() {
         s.startTime,
         t.timeSlots[slotKey],
         goalObj ? goalObj.title : '',
-        goalObj ? (goalObj.bestOutcome || '') : '',
-        goalObj ? (goalObj.personalObstacle || '') : '',
-        goalObj ? (goalObj.mainIf || '') : '',
-        goalObj ? (goalObj.mainThen || '') : '',
+        (!isControlGroup && goalObj) ? (goalObj.bestOutcome || '') : '',
+        (!isControlGroup && goalObj) ? (goalObj.personalObstacle || '') : '',
+        (!isControlGroup && goalObj) ? (goalObj.mainIf || '') : '',
+        (!isControlGroup && goalObj) ? (goalObj.mainThen || '') : '',
         goalObj ? goalObj.metric : '',
         goalObj ? goalObj.startValue : '',
         goalObj ? goalObj.currentValue : '',
@@ -1043,8 +1113,8 @@ export default function App() {
         dTotal,
         timeLimitStr,
         s.progressAdded || 0,
-        getMciiAppliedLabel(s.mciiApplied),
-        getSessionFidelityScore(s.mciiApplied) !== null ? getSessionFidelityScore(s.mciiApplied) : '',
+        !isControlGroup ? getMciiAppliedLabel(s.mciiApplied) : '',
+        (!isControlGroup && getSessionFidelityScore(s.mciiApplied) !== null) ? getSessionFidelityScore(s.mciiApplied) : '',
         overallFidelityPct,
         s.rating,
         s.notes || ''
@@ -1056,8 +1126,11 @@ export default function App() {
     const url = URL.createObjectURL(blob);
     const safeAlias = sanitizeFilenamePart(userName);
     const todayStr = getTodayDateString();
-    const filePrefix = lang === 'tr' ? 'MCII_Veri' : 'MCII_Data';
-    const fileName = `${filePrefix}_${safeAlias}_${todayStr}.csv`;
+    const groupFileTag = lang === 'tr'
+      ? (isControlGroup ? 'GrupB' : 'GrupA')
+      : (isControlGroup ? 'GroupB' : 'GroupA');
+    const filePrefix = lang === 'tr' ? 'OdakVeri' : 'FocusData';
+    const fileName = `${filePrefix}_${groupFileTag}_${safeAlias}_${todayStr}.csv`;
 
     const link = document.createElement('a');
     link.href = url;
@@ -1127,6 +1200,11 @@ export default function App() {
     setIsRunning(false);
     setCurrentDistractions(prev => ({ ...prev, [type]: prev[type] + 1 }));
 
+    if (isControlGroup) {
+      setActiveObstacle(null);
+      return;
+    }
+
     const catObj = t.categories[type] || t.categories['Diğer'];
     const legacyFirst = (activeGoal && activeGoal.obstacles && activeGoal.obstacles.length > 0)
       ? activeGoal.obstacles[0]
@@ -1142,7 +1220,7 @@ export default function App() {
   };
 
   const handleFinishSessionConfirm = () => {
-    if (!sessionMciiApplied) {
+    if (!isControlGroup && !sessionMciiApplied) {
       setEndModalError(t.errSelectMciiFidelity);
       return;
     }
@@ -1165,7 +1243,7 @@ export default function App() {
       pausedSeconds: pausedSeconds,
       completedByTimeLimit: isTimeUp,
       progressAdded: addedProgress,
-      mciiApplied: sessionMciiApplied,
+      mciiApplied: isControlGroup ? '' : sessionMciiApplied,
       rating: sessionRating,
       notes: sessionNotes.trim() || t.noNoteDefault,
       distractions: { ...currentDistractions }
@@ -1196,9 +1274,11 @@ export default function App() {
           <div className="w-20 h-20 bg-indigo-100 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner">
             <Target className="w-10 h-10 text-indigo-600" />
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-800 mb-2">{t.appName}</h1>
+          <h1 className="text-3xl font-extrabold text-slate-800 mb-2">
+            {t.appNameNeutral}
+          </h1>
           <p className="text-slate-500 mb-6 text-sm leading-relaxed">
-            {t.onboardingSubtitle}
+            {t.onboardingSubtitleNeutral}
           </p>
           
           <div className="space-y-4 text-left mb-8">
@@ -1213,6 +1293,35 @@ export default function App() {
               />
             </div>
             <div>
+              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t.groupLabel}</label>
+              <div className="grid grid-cols-2 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setStudyGroup('experiment')}
+                  className={`py-3.5 px-3 rounded-xl font-extrabold text-xs sm:text-sm border-2 transition-all flex items-center justify-center gap-1.5 ${
+                    studyGroup === 'experiment'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-100'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300'
+                  }`}
+                >
+                  {studyGroup === 'experiment' && <Check className="w-4 h-4 shrink-0" />}
+                  <span>{t.groupExperimentLabel}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStudyGroup('control')}
+                  className={`py-3.5 px-3 rounded-xl font-extrabold text-xs sm:text-sm border-2 transition-all flex items-center justify-center gap-1.5 ${
+                    studyGroup === 'control'
+                      ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-100'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300'
+                  }`}
+                >
+                  {studyGroup === 'control' && <Check className="w-4 h-4 shrink-0" />}
+                  <span>{t.groupControlLabel}</span>
+                </button>
+              </div>
+            </div>
+            <div>
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t.fieldLabel}</label>
               <input 
                 type="text" 
@@ -1225,10 +1334,10 @@ export default function App() {
           </div>
 
           <button 
-            onClick={() => userName.trim() !== '' && setOnboardingStep(1)}
-            disabled={!userName.trim()}
+            onClick={() => (userName.trim() !== '' && studyGroup !== '') && setOnboardingStep(1)}
+            disabled={!userName.trim() || !studyGroup}
             className={`w-full py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all ${
-              userName.trim() 
+              userName.trim() && studyGroup
                 ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 cursor-pointer' 
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
@@ -1262,16 +1371,16 @@ export default function App() {
             <div className="p-4 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex gap-3.5 items-start">
               <div className="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</div>
               <div>
-                <h3 className="font-bold text-slate-800 text-sm mb-1">{t.step1Title}</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">{t.step1Desc}</p>
+                <h3 className="font-bold text-slate-800 text-sm mb-1">{isControlGroup ? t.step1TitleControl : t.step1Title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">{isControlGroup ? t.step1DescControl : t.step1Desc}</p>
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-100 flex gap-3.5 items-start">
               <div className="w-7 h-7 rounded-full bg-amber-500 text-white font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</div>
               <div>
-                <h3 className="font-bold text-slate-800 text-sm mb-1">{t.step2Title}</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">{t.step2Desc}</p>
+                <h3 className="font-bold text-slate-800 text-sm mb-1">{isControlGroup ? t.step2TitleControl : t.step2Title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed">{isControlGroup ? t.step2DescControl : t.step2Desc}</p>
               </div>
             </div>
 
@@ -1302,8 +1411,11 @@ export default function App() {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-2xl font-extrabold text-slate-800">{t.helloUser(userName)}</h2>
+            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+              {isControlGroup ? t.groupControlLabel : t.groupExperimentLabel}
+            </span>
             {userGrade && (
-              <span className="text-[11px] font-bold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">
+              <span className="text-[11px] font-bold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full">
                 {userGrade}
               </span>
             )}
@@ -1356,10 +1468,14 @@ export default function App() {
           <div className="flex justify-between items-center mb-5">
             <div>
               <h3 className="font-extrabold text-slate-800 text-lg">
-                {editingGoalId ? t.editGoalTitle : t.newGoalTitle}
+                {editingGoalId
+                  ? (isControlGroup ? t.editGoalTitleControl : t.editGoalTitle)
+                  : (isControlGroup ? t.newGoalTitleControl : t.newGoalTitle)}
               </h3>
               <p className="text-xs text-slate-400">
-                {editingGoalId ? t.editGoalSub : t.newGoalSub}
+                {editingGoalId
+                  ? (isControlGroup ? t.editGoalSubControl : t.editGoalSub)
+                  : (isControlGroup ? t.newGoalSubControl : t.newGoalSub)}
               </p>
             </div>
             <button onClick={() => { setShowAddGoal(false); setEditingGoalId(null); }} className="p-1.5 rounded-lg hover:bg-slate-100">
@@ -1369,7 +1485,7 @@ export default function App() {
           
           <div className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-600 mb-1 block">{t.goalStep1}</label>
+              <label className="text-xs font-bold text-slate-600 mb-1 block">{isControlGroup ? t.goalStep1Control : t.goalStep1}</label>
               <input 
                 type="text" 
                 placeholder={t.goalTitlePlaceholder} 
@@ -1433,64 +1549,68 @@ export default function App() {
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-100">
-              <label className="text-xs font-bold text-emerald-700 mb-1 block">{t.goalStep2}</label>
-              <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">{t.goalStep2Hint}</p>
-              <textarea 
-                placeholder={t.bestOutcomePlaceholder} 
-                className="w-full p-3 bg-emerald-50/40 rounded-xl text-sm border border-emerald-200 outline-none focus:border-emerald-500 resize-none" 
-                rows="3" 
-                value={newGoal.bestOutcome} 
-                onChange={e => setNewGoal({...newGoal, bestOutcome: e.target.value})}
-              />
-            </div>
-
-            <div className="pt-2 border-t border-slate-100">
-              <label className="text-xs font-bold text-rose-700 mb-1 block">{t.goalStep3}</label>
-              <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">{t.goalStep3Hint}</p>
-              <textarea 
-                placeholder={t.personalObstaclePlaceholder} 
-                className="w-full p-3 bg-rose-50/40 rounded-xl text-sm border border-rose-200 outline-none focus:border-rose-500 resize-none" 
-                rows="2" 
-                value={newGoal.personalObstacle} 
-                onChange={e => setNewGoal({...newGoal, personalObstacle: e.target.value})}
-              />
-            </div>
-
-            <div className="pt-2 border-t border-slate-100">
-              <label className="text-xs font-bold text-amber-800 block mb-1">{t.goalStep4}</label>
-              <p className="text-[11px] text-slate-500 mb-2.5 leading-relaxed">{t.goalStep4Hint}</p>
-              <div className="space-y-2.5 bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/80">
-                <div className="flex items-start gap-2">
-                  <span className="text-[11px] font-extrabold text-amber-900 bg-amber-200 px-2 py-1 rounded shrink-0 mt-1">{t.ifTag}</span>
+            {!isControlGroup && (
+              <>
+                <div className="pt-2 border-t border-slate-100">
+                  <label className="text-xs font-bold text-emerald-700 mb-1 block">{t.goalStep2}</label>
+                  <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">{t.goalStep2Hint}</p>
                   <textarea 
-                    rows="2"
-                    placeholder={t.mainIfPlaceholder} 
-                    className="flex-1 p-2 rounded-lg text-xs outline-none border border-amber-200 bg-white resize-none focus:border-amber-500" 
-                    value={newGoal.mainIf} 
-                    onChange={e => setNewGoal({...newGoal, mainIf: e.target.value})}
+                    placeholder={t.bestOutcomePlaceholder} 
+                    className="w-full p-3 bg-emerald-50/40 rounded-xl text-sm border border-emerald-200 outline-none focus:border-emerald-500 resize-none" 
+                    rows="3" 
+                    value={newGoal.bestOutcome} 
+                    onChange={e => setNewGoal({...newGoal, bestOutcome: e.target.value})}
                   />
                 </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-[11px] font-extrabold text-emerald-900 bg-emerald-200 px-2 py-1 rounded shrink-0 mt-1">{t.thenTag}</span>
+
+                <div className="pt-2 border-t border-slate-100">
+                  <label className="text-xs font-bold text-rose-700 mb-1 block">{t.goalStep3}</label>
+                  <p className="text-[11px] text-slate-500 mb-2 leading-relaxed">{t.goalStep3Hint}</p>
                   <textarea 
-                    rows="2"
-                    placeholder={t.mainThenPlaceholder} 
-                    className="flex-1 p-2 rounded-lg text-xs outline-none border border-emerald-200 bg-white resize-none focus:border-emerald-500" 
-                    value={newGoal.mainThen} 
-                    onChange={e => setNewGoal({...newGoal, mainThen: e.target.value})}
+                    placeholder={t.personalObstaclePlaceholder} 
+                    className="w-full p-3 bg-rose-50/40 rounded-xl text-sm border border-rose-200 outline-none focus:border-rose-500 resize-none" 
+                    rows="2" 
+                    value={newGoal.personalObstacle} 
+                    onChange={e => setNewGoal({...newGoal, personalObstacle: e.target.value})}
                   />
                 </div>
-              </div>
-            </div>
 
-            <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-2.5">
-              <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[11px] font-extrabold text-slate-700 mb-0.5">{t.timeStudyInfoTitle}</p>
-                <p className="text-[11px] text-slate-500 leading-relaxed">{t.timeStudyInfoDesc}</p>
-              </div>
-            </div>
+                <div className="pt-2 border-t border-slate-100">
+                  <label className="text-xs font-bold text-amber-800 block mb-1">{t.goalStep4}</label>
+                  <p className="text-[11px] text-slate-500 mb-2.5 leading-relaxed">{t.goalStep4Hint}</p>
+                  <div className="space-y-2.5 bg-amber-50/80 p-3.5 rounded-2xl border border-amber-200/80">
+                    <div className="flex items-start gap-2">
+                      <span className="text-[11px] font-extrabold text-amber-900 bg-amber-200 px-2 py-1 rounded shrink-0 mt-1">{t.ifTag}</span>
+                      <textarea 
+                        rows="2"
+                        placeholder={t.mainIfPlaceholder} 
+                        className="flex-1 p-2 rounded-lg text-xs outline-none border border-amber-200 bg-white resize-none focus:border-amber-500" 
+                        value={newGoal.mainIf} 
+                        onChange={e => setNewGoal({...newGoal, mainIf: e.target.value})}
+                      />
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-[11px] font-extrabold text-emerald-900 bg-emerald-200 px-2 py-1 rounded shrink-0 mt-1">{t.thenTag}</span>
+                      <textarea 
+                        rows="2"
+                        placeholder={t.mainThenPlaceholder} 
+                        className="flex-1 p-2 rounded-lg text-xs outline-none border border-emerald-200 bg-white resize-none focus:border-emerald-500" 
+                        value={newGoal.mainThen} 
+                        onChange={e => setNewGoal({...newGoal, mainThen: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-2.5">
+                  <Info className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[11px] font-extrabold text-slate-700 mb-0.5">{t.timeStudyInfoTitle}</p>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">{t.timeStudyInfoDesc}</p>
+                  </div>
+                </div>
+              </>
+            )}
 
             <button 
               onClick={() => {
@@ -1528,7 +1648,7 @@ export default function App() {
               }} 
               className="w-full py-4 rounded-xl font-bold text-white bg-indigo-600 mt-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700"
             >
-              {editingGoalId ? t.updateGoalBtn : t.saveGoalBtn}
+              {editingGoalId ? t.updateGoalBtn : (isControlGroup ? t.saveGoalBtnControl : t.saveGoalBtn)}
             </button>
           </div>
         </div>
@@ -1538,7 +1658,7 @@ export default function App() {
             <Target className="w-8 h-8" />
           </div>
           <h3 className="font-extrabold text-slate-800 text-base mb-1">{t.noGoalsTitle}</h3>
-          <p className="text-xs text-slate-500 mb-6">{t.noGoalsDesc}</p>
+          <p className="text-xs text-slate-500 mb-6">{isControlGroup ? t.noGoalsDescControl : t.noGoalsDesc}</p>
           <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
             <button
               onClick={openNewGoalForm}
@@ -1655,7 +1775,8 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* MCII (WOOP) Özeti: En İyi Sonuç, Kişisel İçsel Engel ve Ana Plan */}
+                {/* MCII (WOOP) Özeti: En İyi Sonuç, Kişisel İçsel Engel ve Ana Plan (Sadece Deney Grubu) */}
+                {!isControlGroup && (
                 <div className="space-y-2">
                   {goal.bestOutcome && (
                     <div className="bg-emerald-50/60 p-2.5 rounded-xl border border-emerald-100 flex items-start gap-2">
@@ -1678,6 +1799,7 @@ export default function App() {
                     </div>
                   )}
                 </div>
+                )}
 
                 <div className="mt-3 pt-2.5 border-t border-slate-100 flex justify-end">
                   <button 
@@ -1764,7 +1886,7 @@ export default function App() {
                 />
               </div>
 
-              {activeGoal && (activeGoal.bestOutcome || activeGoal.personalObstacle || activeGoal.mainIf) && (
+              {!isControlGroup && activeGoal && (activeGoal.bestOutcome || activeGoal.personalObstacle || activeGoal.mainIf) && (
                 <div className="p-3.5 rounded-2xl bg-indigo-50/70 border border-indigo-100 space-y-1.5">
                   <p className="text-[11px] font-extrabold text-indigo-800 uppercase tracking-wider flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
@@ -1865,7 +1987,15 @@ export default function App() {
         </div>
 
         {/* BİRLEŞİK MÜDAHALE KARTI: STANDART DİKKAT MÜDAHALESİ + KİŞİSEL MCII HATIRLATMASI */}
-        {activeObstacle && !isRunning && (
+        {isControlGroup && !isRunning && !showEndModal && (
+          <div className="bg-slate-800/90 border border-slate-700 p-3.5 rounded-2xl my-3 max-w-md w-full mx-auto text-center">
+            <p className="text-slate-300 text-xs font-semibold leading-relaxed">
+              {t.controlPausedHint}
+            </p>
+          </div>
+        )}
+
+        {!isControlGroup && activeObstacle && !isRunning && (
           <div className="bg-amber-500/15 border border-amber-500/40 p-4 rounded-2xl my-4 max-w-md w-full mx-auto">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-6 h-6 text-amber-400 shrink-0 mt-0.5" />
@@ -2000,7 +2130,8 @@ export default function App() {
                 </div>
               )}
 
-              {/* MCII PLANI UYGULAMA SADAKATİ (TREATMENT FIDELITY) SORUSU */}
+              {/* MCII PLANI UYGULAMA SADAKATİ (TREATMENT FIDELITY) SORUSU (Sadece Deney Grubu) */}
+              {!isControlGroup && (
               <div className="mb-4">
                 <label className="text-[11px] font-extrabold text-slate-700 block mb-2 leading-snug">
                   {t.mciiFidelityQuestion}
@@ -2033,6 +2164,7 @@ export default function App() {
                   <p className="text-[11px] font-bold text-red-600 mt-1.5">{endModalError}</p>
                 )}
               </div>
+              )}
 
               <div className="mb-4">
                 <label className="text-xs font-bold text-slate-700 block mb-2">
@@ -2157,14 +2289,20 @@ export default function App() {
 
     if (lang === 'en') {
       const goalCtx = selectedGoalObj ? `For your goal "${selectedGoalObj.title}", ` : 'Across your study sessions, ';
-      return `${goalCtx}you completed ${filteredSessions.length} sessions with ${totalDistCount} focus interruptions. Most interruptions occurred during "${mostDistractedSubject}" (${subjectDistractions[mostDistractedSubject]} times), primarily triggered by "${topDistractionLabel}". Your focus tends to drop during ${worstBlockName}, whereas ${bestBlockName} yields your highest efficiency. Try scheduling challenging topics during ${bestBlockName} and activating your "${topDistractionLabel}" If–Then plan before starting.`;
+      const closingEn = isControlGroup
+        ? `Scheduling challenging topics during ${bestBlockName} can help you monitor and organize your study blocks.`
+        : `Try scheduling challenging topics during ${bestBlockName} and activating your personal MCII If–Then plan before starting.`;
+      return `${goalCtx}you completed ${filteredSessions.length} sessions with ${totalDistCount} focus interruptions. Most interruptions occurred during "${mostDistractedSubject}" (${subjectDistractions[mostDistractedSubject]} times), primarily triggered by "${topDistractionLabel}". Your focus tends to drop during ${worstBlockName}, whereas ${bestBlockName} yields your highest efficiency. ${closingEn}`;
     }
 
     const goalContextText = selectedGoalObj 
       ? `"${selectedGoalObj.title}" hedefin doğrultusunda ` 
       : `Bu dönem yaptığın çalışmalarda `;
+    const closingTr = isControlGroup
+      ? `Zorlandığın konuları ${bestBlockName} dilimine planlayarak çalışma bloklarını daha düzenli takip edebilirsin.`
+      : `Zorlandığın konuları ${bestBlockName} dilimine planlamanı ve kişisel engelin için MCII Eğer–O Zaman planını seans öncesinde hatırlamanı öneririm.`;
 
-    return `${goalContextText}toplam ${filteredSessions.length} seans gerçekleştirdin ve ${totalDistCount} kez odak kaybı yaşadın. En fazla dikkat dağınıklığını "${mostDistractedSubject}" çalışırken (${subjectDistractions[mostDistractedSubject]} kopma) ve en çok "${topDistractionLabel}" nedeniyle yaşıyorsun. Verilere göre ${worstBlockName} saatlerinde çalıştığında motivasyonun ve verimin düşüyor; ancak ${bestBlockName} saatlerinde odaklanman çok daha yüksek. Zorlandığın konuları ${bestBlockName} dilimine planlamanı ve "${topDistractionLabel}" engeli için MCII Eğer-O Zaman kuralını seans öncesinde uygulamanı öneririm.`;
+    return `${goalContextText}toplam ${filteredSessions.length} seans gerçekleştirdin ve ${totalDistCount} kez odak kaybı yaşadın. En fazla dikkat dağınıklığını "${mostDistractedSubject}" çalışırken (${subjectDistractions[mostDistractedSubject]} kopma) ve en çok "${topDistractionLabel}" nedeniyle yaşıyorsun. Verilere göre ${worstBlockName} saatlerinde çalıştığında motivasyonun ve verimin düşüyor; ancak ${bestBlockName} saatlerinde odaklanman çok daha yüksek. ${closingTr}`;
   };
 
   const renderReports = () => {
@@ -2329,8 +2467,8 @@ export default function App() {
           </p>
         </div>
 
-        {/* 4 ANA ORAN KARTI (2x2) */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* ANA ORAN KARTLARI (Kontrol: 3 Kart / Deney: 4 Kart) */}
+        <div className={`grid gap-3 ${isControlGroup ? 'grid-cols-3' : 'grid-cols-2'}`}>
           <div className="bg-white p-3.5 rounded-2xl text-center shadow-sm border border-slate-100">
             <div className="text-xl font-black text-indigo-600">%{avgGoalAttainment}</div>
             <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">{t.cardGoalAttainment}</div>
@@ -2343,27 +2481,31 @@ export default function App() {
             <div className="text-xl font-black text-amber-500">%{avgRatingPercent}</div>
             <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">{t.cardSessionEff}</div>
           </div>
-          <div className="bg-white p-3.5 rounded-2xl text-center shadow-sm border border-violet-100">
-            <div className="text-xl font-black text-violet-600">
-              {fidelityStats.rate !== null ? `%${fidelityStats.rate}` : '-'}
+          {!isControlGroup && (
+            <div className="bg-white p-3.5 rounded-2xl text-center shadow-sm border border-violet-100">
+              <div className="text-xl font-black text-violet-600">
+                {fidelityStats.rate !== null ? `%${fidelityStats.rate}` : '-'}
+              </div>
+              <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">{t.cardMciiFidelity}</div>
             </div>
-            <div className="text-[10px] font-bold text-slate-500 uppercase mt-1">{t.cardMciiFidelity}</div>
-          </div>
-        </div>
-
-        {/* MCII UYGULAMA SADAKATİ DAĞILIMI */}
-        <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
-          <h3 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider mb-1.5">
-            {t.fidelitySummaryTitle}
-          </h3>
-          {fidelityStats.encountered > 0 || fidelityStats.notEncountered > 0 ? (
-            <p className="text-xs font-semibold text-slate-600">
-              {t.fidelityBreakdown(fidelityStats.yes, fidelityStats.partial, fidelityStats.no, fidelityStats.notEncountered)}
-            </p>
-          ) : (
-            <p className="text-xs text-slate-400">{t.fidelityNoEncountered}</p>
           )}
         </div>
+
+        {/* MCII UYGULAMA SADAKATİ DAĞILIMI (Sadece Deney Grubu) */}
+        {!isControlGroup && (
+          <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100">
+            <h3 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider mb-1.5">
+              {t.fidelitySummaryTitle}
+            </h3>
+            {fidelityStats.encountered > 0 || fidelityStats.notEncountered > 0 ? (
+              <p className="text-xs font-semibold text-slate-600">
+                {t.fidelityBreakdown(fidelityStats.yes, fidelityStats.partial, fidelityStats.no, fidelityStats.notEncountered)}
+              </p>
+            ) : (
+              <p className="text-xs text-slate-400">{t.fidelityNoEncountered}</p>
+            )}
+          </div>
+        )}
 
         {/* KOPMA SÜRESİ ÖZETİ */}
         <div className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100">
@@ -2401,7 +2543,7 @@ export default function App() {
                     <th className="py-2 px-1 text-center">{t.activeMinCol}</th>
                     <th className="py-2 px-1 text-center">{t.pauseMinCol}</th>
                     <th className="py-2 px-1 text-center">{t.effCol}</th>
-                    <th className="py-2 px-1 text-center">{t.fidelityCol}</th>
+                    {!isControlGroup && <th className="py-2 px-1 text-center">{t.fidelityCol}</th>}
                     <th className="py-2 pl-1 text-center">{t.ratingCol}</th>
                   </tr>
                 </thead>
@@ -2418,7 +2560,7 @@ export default function App() {
                         <td className="py-2.5 px-1 text-center font-semibold text-emerald-700">{row.actualMin}</td>
                         <td className="py-2.5 px-1 text-center font-semibold text-rose-600">{weekPauseMin}</td>
                         <td className="py-2.5 px-1 text-center font-extrabold text-indigo-600">%{weekEff}</td>
-                        <td className="py-2.5 px-1 text-center font-extrabold text-violet-600">{weekFid}</td>
+                        {!isControlGroup && <td className="py-2.5 px-1 text-center font-extrabold text-violet-600">{weekFid}</td>}
                         <td className="py-2.5 pl-1 text-center font-bold text-amber-600">{weekRating}</td>
                       </tr>
                     );
@@ -2541,7 +2683,7 @@ export default function App() {
                       {t.effBadge} {session.rating}/10
                     </span>
                   </div>
-                  {session.mciiApplied && (
+                  {!isControlGroup && session.mciiApplied && (
                     <div className="mt-1.5">
                       <span className={`inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-md ${
                         session.mciiApplied === 'yes'
@@ -2646,12 +2788,12 @@ export default function App() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl p-6 max-w-md w-full">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-extrabold text-slate-800 text-base">{t.guideModalTitle}</h3>
+              <h3 className="font-extrabold text-slate-800 text-base">{isControlGroup ? t.guideModalTitleControl : t.guideModalTitle}</h3>
               <button onClick={() => setShowGuideModal(false)}><X className="w-5 h-5 text-slate-400" /></button>
             </div>
             <div className="space-y-3 text-xs text-slate-600 leading-relaxed mb-5">
-              <p><strong>{t.guideP1Title}</strong> {t.guideP1Body}</p>
-              <p><strong>{t.guideP2Title}</strong> {t.guideP2Body}</p>
+              <p><strong>{isControlGroup ? t.guideP1TitleControl : t.guideP1Title}</strong> {isControlGroup ? t.guideP1BodyControl : t.guideP1Body}</p>
+              <p><strong>{isControlGroup ? t.guideP2TitleControl : t.guideP2Title}</strong> {isControlGroup ? t.guideP2BodyControl : t.guideP2Body}</p>
               <p><strong>{t.guideP3Title}</strong> {t.guideP3Body}</p>
               <p><strong>{t.guideP4Title}</strong> {t.guideP4Body}</p>
             </div>
