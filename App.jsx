@@ -3,7 +3,7 @@ import {
   Play, Square, CheckCircle, BarChart2, Home, Target, Clock, 
   Plus, BookOpen, AlertCircle, Calendar, X, Award, TrendingUp, 
   Filter, Info, ChevronRight, Sparkles, Check, MessageSquare,
-  Edit2, Trash2, RotateCcw, UserCheck, Download
+  Edit2, Trash2, Lock, UserCheck, Download
 } from 'lucide-react';
 
 const DISTRACTION_KEYS = [
@@ -35,6 +35,7 @@ const TRANSLATIONS = {
     groupControlLabel: 'Grup B',
     groupExperimentShort: 'Deney',
     groupControlShort: 'Kontrol',
+    groupLockedHint: 'Hedef veya seans kaydı oluşturulduğu için çalışma grubu kilitlendi.',
     fieldLabel: 'HEDEF ALANIN (İSTEĞE BAĞLI)',
     fieldPlaceholder: 'Örn: Sayısal / YKS / Olimpiyat',
     continueBtn: 'Devam Et',
@@ -91,11 +92,16 @@ const TRANSLATIONS = {
     saveGoalBtn: 'Hedefi ve MCII Planını Kaydet',
     saveGoalBtnControl: 'Hedefi Kaydet',
     noGoalsTitle: 'Henüz Hiç Hedefin Yok',
-    noGoalsDesc: 'Kendi çalışma hedeflerini ve "Eğer-O Zaman" planlarını oluşturarak hemen başla veya örnek verileri geri yükle.',
-    noGoalsDescControl: 'Kendi 3 haftalık çalışma hedefini oluşturarak hemen başla veya örnek hedefi yükle.',
+    noGoalsDesc: 'Kendi 3 haftalık çalışma hedefini ve MCII "Eğer–O Zaman" planını oluşturarak hemen başla.',
+    noGoalsDescControl: 'Kendi 3 haftalık çalışma hedefini oluşturarak hemen başla.',
+    errGoalTitle: 'Lütfen somut hedef başlığını yaz.',
+    errGoalDeadline: 'Lütfen bir hedef bitiş tarihi seç.',
+    errGoalTargetDiff: 'Hedef değer, başlangıç değerinden farklı olmalıdır.',
+    errGoalOutcome: 'Lütfen Adım 2: Olumlu sonucu zihninde canlandırarak yaz.',
+    errGoalObstacle: 'Lütfen Adım 3: Kişisel içsel engelini yaz.',
+    errGoalMainPlan: 'Lütfen Adım 4: Kişisel engelin için hem EĞER hem de O ZAMAN planını doldur.',
     controlPausedHint: 'Aktif sayaç duraklatıldı. Derse dönmeye hazır olduğunda "Tekrar Başlat" butonuna dokun.',
     createGoalBtn: 'Yeni Hedef Oluştur',
-    restoreSampleBtn: 'Örnek Hedefleri Yükle',
     expired: 'Süre Doldu',
     daysLeft: (d) => `Hedefe Son ${d} Gün`,
     studiedSummary: (min, count) => `${min} dk çalışıldı (${count} seans)`,
@@ -301,6 +307,7 @@ const TRANSLATIONS = {
     groupControlLabel: 'Group B',
     groupExperimentShort: 'Experimental',
     groupControlShort: 'Control',
+    groupLockedHint: 'Your study group is locked because goal or session records already exist.',
     fieldLabel: 'TARGET FIELD / TRACK (OPTIONAL)',
     fieldPlaceholder: 'e.g., STEM / SAT / AP / Olympiad',
     continueBtn: 'Continue',
@@ -357,11 +364,16 @@ const TRANSLATIONS = {
     saveGoalBtn: 'Save Goal & MCII Plan',
     saveGoalBtnControl: 'Save Goal',
     noGoalsTitle: 'No Goals Yet',
-    noGoalsDesc: 'Create your own study goals and "If–Then" plans to get started, or restore the sample goals.',
-    noGoalsDescControl: 'Create your own 3-week study goal to get started, or load a sample goal.',
+    noGoalsDesc: 'Create your own 3-week study goal and MCII "If–Then" plan to get started.',
+    noGoalsDescControl: 'Create your own 3-week study goal to get started.',
+    errGoalTitle: 'Please enter a concrete goal title.',
+    errGoalDeadline: 'Please select a target deadline.',
+    errGoalTargetDiff: 'Target value must be different from the starting value.',
+    errGoalOutcome: 'Please complete Step 2: Visualize and write the best outcome.',
+    errGoalObstacle: 'Please complete Step 3: Write your personal internal obstacle.',
+    errGoalMainPlan: 'Please complete Step 4: Fill in both the IF and THEN parts of your MCII plan.',
     controlPausedHint: 'Active timer paused. Tap "Resume Timer" when you are ready to return to studying.',
     createGoalBtn: 'Create New Goal',
-    restoreSampleBtn: 'Load Sample Goals',
     expired: 'Expired',
     daysLeft: (d) => `${d} Days Left`,
     studiedSummary: (min, count) => `${min} min studied (${count} sessions)`,
@@ -555,94 +567,34 @@ const TRANSLATIONS = {
   }
 };
 
-const INITIAL_GOALS = [
-  {
-    id: 'g1',
-    title: '3 Haftada 300 Matematik Sorusu Çözmek',
-    bestOutcome: 'Konu eksiklerimi kapatıp deneme netlerimi yükselteceğim; sınav stresim azalacak ve kendime olan güvenim artacak.',
-    personalObstacle: 'Zor sorularda takıldığımda hemen sıkılıp vazgeçme ve çalışmayı erteleme eğilimim.',
-    mainIf: 'Zor bir soruda takılıp vazgeçme veya masadan kalkma isteği hissedersem',
-    mainThen: 'Derin bir nefes alıp soruyu küçük adımlara bölecek, 5 dakika daha uğraştıktan sonra çözemezsem işaretleyip bir sonraki soruya geçeceğim.',
-    metric: 'Soru',
-    startValue: 0,
-    currentValue: 120,
-    targetValue: 300,
-    deadline: '2026-12-25',
-    isCompleted: false,
-    createdAt: '2026-11-01'
-  }
-];
+const formatLocalDate = (dateObj) => {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+  const d = String(dateObj.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
 
-const INITIAL_SESSIONS = [
-  { 
-    id: 's1', 
-    goalId: 'g1', 
-    subject: 'Matematik - Türev', 
-    date: '2026-11-02', 
-    startTime: '19:30', 
-    plannedMin: 60, 
-    actualMin: 45,
-    activeSeconds: 2700,
-    totalElapsedSeconds: 3600,
-    pausedSeconds: 900,
-    completedByTimeLimit: true,
-    mciiApplied: 'partial',
-    rating: 6, 
-    notes: 'İlk 25 dakika çok iyiydi ama sonra telefon bildirimleri dikkatimi dağıttı.',
-    distractions: { 'Telefon/Bildirim': 3, 'Hayal Kurma': 1, 'Görev Değiştirme': 0, 'Diğer': 1 } 
-  },
-  { 
-    id: 's2', 
-    goalId: 'g1', 
-    subject: 'Matematik - Fonksiyonlar', 
-    date: '2026-11-10', 
-    startTime: '10:00', 
-    plannedMin: 50, 
-    actualMin: 48,
-    activeSeconds: 2880,
-    totalElapsedSeconds: 3000,
-    pausedSeconds: 120,
-    completedByTimeLimit: true,
-    mciiApplied: 'yes',
-    rating: 9, 
-    notes: 'Sabah çalışmak çok verimli oldu, telefonu diğer odaya bıraktım.',
-    distractions: { 'Telefon/Bildirim': 0, 'Hayal Kurma': 1, 'Görev Değiştirme': 0, 'Diğer': 0 } 
-  },
-  { 
-    id: 's3', 
-    goalId: 'g2', 
-    subject: 'Fen Bilimleri - Astronomi', 
-    date: '2026-11-16', 
-    startTime: '15:30', 
-    plannedMin: 60, 
-    actualMin: 55,
-    activeSeconds: 3300,
-    totalElapsedSeconds: 3600,
-    pausedSeconds: 300,
-    completedByTimeLimit: true,
-    mciiApplied: 'not_encountered',
-    rating: 8, 
-    notes: 'Olimpiyat soruları zorlayıcıydı ama odaklanmamı korudum.',
-    distractions: { 'Telefon/Bildirim': 1, 'Hayal Kurma': 1, 'Görev Değiştirme': 0, 'Diğer': 1 } 
-  },
-  { 
-    id: 's4', 
-    goalId: 'g3', 
-    subject: 'AP Fizik - Kinematik', 
-    date: '2026-11-18', 
-    startTime: '21:15', 
-    plannedMin: 45, 
-    actualMin: 35,
-    activeSeconds: 2100,
-    totalElapsedSeconds: 2700,
-    pausedSeconds: 600,
-    completedByTimeLimit: true,
-    mciiApplied: 'yes',
-    rating: 7, 
-    notes: 'Akşam saatinde yorgundum ama MCII planını uygulayarak toparladım.',
-    distractions: { 'Telefon/Bildirim': 1, 'Hayal Kurma': 2, 'Görev Değiştirme': 1, 'Diğer': 0 } 
-  }
-];
+const getTodayDateString = () => formatLocalDate(new Date());
+
+const getDefaultDeadlineString = (daysAhead = 21) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  return formatLocalDate(d);
+};
+
+const getCurrentTimeString = () => {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  return `${hh}:${mm}`;
+};
+
+const parseLocalDate = (dateStr) => {
+  if (!dateStr || typeof dateStr !== 'string') return null;
+  const parts = dateStr.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return null;
+  return new Date(parts[0], parts[1] - 1, parts[2]);
+};
 
 const COLORS = ['#4f46e5', '#ef4444', '#f59e0b', '#10b981'];
 
@@ -740,10 +692,14 @@ export default function App() {
     localStorage.setItem('mcii_sessions', JSON.stringify(sessions));
   }, [sessions]);
 
+  const isGroupLocked = goals.length > 0 || sessions.length > 0;
+
   // Kronometre ve Seans State'leri (Klasik Zaman Etüdü - Toplam Blok Süresi)
   const [activeGoal, setActiveGoal] = useState(null);
   const [sessionSubject, setSessionSubject] = useState('');
   const [plannedTime, setPlannedTime] = useState(45);
+  const [sessionStartTime, setSessionStartTime] = useState('');
+  const [sessionStartDate, setSessionStartDate] = useState('');
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [isRunning, setIsRunning] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0); // Aktif (net) çalışma süresi (saniye)
@@ -752,6 +708,7 @@ export default function App() {
   const [currentDistractions, setCurrentDistractions] = useState({ ...EMPTY_DISTRACTIONS });
   const [activeObstacle, setActiveObstacle] = useState(null); 
   const [uiMessage, setUiMessage] = useState('');
+  const [isSessionHydrated, setIsSessionHydrated] = useState(false);
   
   // Seans Sonu Değerlendirme Modalı State'leri
   const [showEndModal, setShowEndModal] = useState(false);
@@ -764,9 +721,10 @@ export default function App() {
   // Yeni Hedef Ekleme ve Düzenleme State'leri
   const [showAddGoal, setShowAddGoal] = useState(false);
   const [editingGoalId, setEditingGoalId] = useState(null);
+  const [goalFormError, setGoalFormError] = useState('');
   const [goalToDelete, setGoalToDelete] = useState(null);
   const [showClearAllModal, setShowClearAllModal] = useState(false);
-  const [newGoal, setNewGoal] = useState({
+  const [newGoal, setNewGoal] = useState(() => ({
     title: '',
     bestOutcome: '',
     personalObstacle: '',
@@ -776,8 +734,8 @@ export default function App() {
     startValue: 0,
     currentValue: 0,
     targetValue: 300,
-    deadline: '2026-12-31'
-  });
+    deadline: getDefaultDeadlineString(21)
+  }));
 
   // Rapor Filtreleri
   const [selectedReportGoalId, setSelectedReportGoalId] = useState('all');
@@ -833,13 +791,149 @@ export default function App() {
     setShowEndModal(false);
     setSessionProgressDelta('');
     setSessionMciiApplied('');
+    setSessionStartTime('');
+    setSessionStartDate('');
     setEndModalError('');
     lastTickRef.current = null;
     totalAccSecRef.current = 0;
     activeAccSecRef.current = 0;
+    try {
+      localStorage.removeItem('mcii_activeSession');
+    } catch (e) {}
   };
 
-  // Klasik Zaman Etüdü Zamanlayıcısı (Date.now() tabanlı — ekran kilitlense bile sapma yapmaz)
+  // Aktif seansı localStorage'a anlık yedekleme yardımcısı (mobil sekme kapanmasına karşı)
+  const persistActiveSessionSnapshot = (overrides = {}) => {
+    const goalObj = overrides.activeGoal !== undefined ? overrides.activeGoal : activeGoal;
+    const activeFlag = overrides.isSessionActive !== undefined ? overrides.isSessionActive : isSessionActive;
+    const endModalFlag = overrides.showEndModal !== undefined ? overrides.showEndModal : showEndModal;
+
+    if (!goalObj || (!activeFlag && !endModalFlag)) {
+      try {
+        localStorage.removeItem('mcii_activeSession');
+      } catch (e) {}
+      return;
+    }
+
+    try {
+      const payload = {
+        goalId: goalObj.id,
+        subject: overrides.sessionSubject !== undefined ? overrides.sessionSubject : sessionSubject,
+        plannedTime: overrides.plannedTime !== undefined ? overrides.plannedTime : plannedTime,
+        startTime: overrides.sessionStartTime !== undefined ? overrides.sessionStartTime : sessionStartTime,
+        startDate: overrides.sessionStartDate !== undefined ? overrides.sessionStartDate : sessionStartDate,
+        isSessionActive: activeFlag,
+        isRunning: overrides.isRunning !== undefined ? overrides.isRunning : isRunning,
+        isTimeUp: overrides.isTimeUp !== undefined ? overrides.isTimeUp : isTimeUp,
+        showEndModal: endModalFlag,
+        totalAccSec: overrides.totalAccSec !== undefined ? overrides.totalAccSec : totalAccSecRef.current,
+        activeAccSec: overrides.activeAccSec !== undefined ? overrides.activeAccSec : activeAccSecRef.current,
+        lastSavedAt: Date.now(),
+        distractions: overrides.currentDistractions !== undefined ? overrides.currentDistractions : currentDistractions,
+        activeObstacle: overrides.activeObstacle !== undefined ? overrides.activeObstacle : activeObstacle,
+        sessionRating: overrides.sessionRating !== undefined ? overrides.sessionRating : sessionRating,
+        sessionNotes: overrides.sessionNotes !== undefined ? overrides.sessionNotes : sessionNotes,
+        sessionProgressDelta: overrides.sessionProgressDelta !== undefined ? overrides.sessionProgressDelta : sessionProgressDelta,
+        sessionMciiApplied: overrides.sessionMciiApplied !== undefined ? overrides.sessionMciiApplied : sessionMciiApplied
+      };
+      localStorage.setItem('mcii_activeSession', JSON.stringify(payload));
+    } catch (e) {}
+  };
+
+  // Uygulama yeniden yüklendiğinde yarım kalan aktif seansı geri yükle
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('mcii_activeSession');
+      if (raw) {
+        const saved = JSON.parse(raw);
+        const matchedGoal = goals.find(g => g.id === saved.goalId);
+        if (matchedGoal && (saved.isSessionActive || saved.showEndModal)) {
+          const pMin = Math.max(1, Number(saved.plannedTime) || 45);
+          const pSec = pMin * 60;
+          let restoredTotal = Math.max(0, Number(saved.totalAccSec) || 0);
+          let restoredActive = Math.max(0, Number(saved.activeAccSec) || 0);
+          let restoredIsActive = Boolean(saved.isSessionActive);
+          let restoredIsRunning = Boolean(saved.isRunning);
+          let restoredIsTimeUp = Boolean(saved.isTimeUp);
+          let restoredShowEndModal = Boolean(saved.showEndModal);
+          let restoredObstacle = saved.activeObstacle || null;
+
+          if (restoredIsActive && !restoredShowEndModal && !restoredIsTimeUp && saved.lastSavedAt) {
+            const gapSec = Math.max(0, (Date.now() - Number(saved.lastSavedAt)) / 1000);
+            const remainingBeforeGap = Math.max(0, pSec - restoredTotal);
+            const effectiveGap = Math.min(gapSec, remainingBeforeGap);
+            restoredTotal += effectiveGap;
+            if (restoredIsRunning) {
+              restoredActive = Math.min(pSec, restoredActive + effectiveGap);
+            }
+            if (restoredTotal >= pSec) {
+              restoredIsRunning = false;
+              restoredIsActive = false;
+              restoredObstacle = null;
+              restoredIsTimeUp = true;
+              restoredShowEndModal = true;
+            }
+          }
+
+          totalAccSecRef.current = restoredTotal;
+          activeAccSecRef.current = restoredActive;
+          lastTickRef.current = Date.now();
+
+          setActiveGoal(matchedGoal);
+          setSessionSubject(saved.subject || '');
+          setPlannedTime(pMin);
+          setSessionStartTime(saved.startTime || getCurrentTimeString());
+          setSessionStartDate(saved.startDate || getTodayDateString());
+          setTotalElapsedTime(Math.min(pSec, Math.floor(restoredTotal)));
+          setElapsedTime(Math.min(pSec, Math.floor(restoredActive)));
+          setIsSessionActive(restoredIsActive);
+          setIsRunning(restoredIsRunning);
+          setIsTimeUp(restoredIsTimeUp);
+          setShowEndModal(restoredShowEndModal);
+          setCurrentDistractions(saved.distractions ? { ...EMPTY_DISTRACTIONS, ...saved.distractions } : { ...EMPTY_DISTRACTIONS });
+          setActiveObstacle(restoredObstacle);
+          setSessionRating(saved.sessionRating ?? 8);
+          setSessionNotes(saved.sessionNotes || '');
+          setSessionProgressDelta(saved.sessionProgressDelta || '');
+          setSessionMciiApplied(saved.sessionMciiApplied || '');
+          setActiveTab('timer');
+        } else {
+          localStorage.removeItem('mcii_activeSession');
+        }
+      }
+    } catch (e) {
+      try {
+        localStorage.removeItem('mcii_activeSession');
+      } catch (err) {}
+    } finally {
+      setIsSessionHydrated(true);
+    }
+  }, []);
+
+  // Aktif seans state değişikliklerini localStorage'a yansıt
+  useEffect(() => {
+    if (!isSessionHydrated) return;
+    persistActiveSessionSnapshot();
+  }, [
+    isSessionHydrated,
+    activeGoal,
+    sessionSubject,
+    plannedTime,
+    sessionStartTime,
+    sessionStartDate,
+    isSessionActive,
+    isRunning,
+    isTimeUp,
+    showEndModal,
+    currentDistractions,
+    activeObstacle,
+    sessionRating,
+    sessionNotes,
+    sessionProgressDelta,
+    sessionMciiApplied
+  ]);
+
+  // Klasik Zaman Etüdü Zamanlayıcısı (Date.now() tabanlı — ekran kilidi ve sekme yenilemesine dayanıklı)
   useEffect(() => {
     if (!isSessionActive || showEndModal || isTimeUp) {
       lastTickRef.current = null;
@@ -869,20 +963,37 @@ export default function App() {
       setElapsedTime(Math.min(plannedSeconds, Math.floor(activeAccSecRef.current)));
     };
 
-    const interval = setInterval(syncClock, 500);
-    const handleVisibilityOrFocus = () => {
-      if (document.visibilityState === 'visible') {
-        syncClock();
-      }
+    const syncAndSave = () => {
+      syncClock();
+      persistActiveSessionSnapshot({
+        totalAccSec: totalAccSecRef.current,
+        activeAccSec: activeAccSecRef.current
+      });
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
-    window.addEventListener('focus', syncClock);
+    const interval = setInterval(() => {
+      syncClock();
+      persistActiveSessionSnapshot({
+        totalAccSec: totalAccSecRef.current,
+        activeAccSec: activeAccSecRef.current
+      });
+    }, 1000);
+
+    const handleVisibilityChange = () => {
+      syncAndSave();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', syncAndSave);
+    window.addEventListener('pagehide', syncAndSave);
+    window.addEventListener('beforeunload', syncAndSave);
 
     return () => {
       clearInterval(interval);
-      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
-      window.removeEventListener('focus', syncClock);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', syncAndSave);
+      window.removeEventListener('pagehide', syncAndSave);
+      window.removeEventListener('beforeunload', syncAndSave);
     };
   }, [isSessionActive, isRunning, showEndModal, isTimeUp, plannedSeconds]);
 
@@ -931,15 +1042,12 @@ export default function App() {
     return Math.max(getSessionActiveSeconds(s), (s.plannedMin || 0) * 60);
   };
 
-  const getTodayDateString = () => {
-    return new Date().toISOString().split('T')[0];
-  };
-
   const getDaysRemaining = (deadlineDate) => {
     if (!deadlineDate) return null;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const deadline = new Date(deadlineDate);
+    const deadline = parseLocalDate(deadlineDate) || new Date(deadlineDate);
+    if (isNaN(deadline.getTime())) return null;
     deadline.setHours(0, 0, 0, 0);
     const diffTime = deadline - today;
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -962,15 +1070,15 @@ export default function App() {
   const getWeekNumberForSession = (sessionDateStr, allSessionsList) => {
     if (!allSessionsList || allSessionsList.length === 0) return 1;
     const dates = allSessionsList
-      .map(s => new Date(s.date))
-      .filter(d => !isNaN(d.getTime()))
+      .map(s => parseLocalDate(s.date) || new Date(s.date))
+      .filter(d => d && !isNaN(d.getTime()))
       .sort((a, b) => a - b);
     if (dates.length === 0) return 1;
     const firstDate = new Date(dates[0]);
     firstDate.setHours(0, 0, 0, 0);
-    const curr = new Date(sessionDateStr);
+    const curr = parseLocalDate(sessionDateStr) || new Date(sessionDateStr);
+    if (!curr || isNaN(curr.getTime())) return 1;
     curr.setHours(0, 0, 0, 0);
-    if (isNaN(curr.getTime())) return 1;
     const diffDays = Math.max(0, Math.floor((curr - firstDate) / (1000 * 60 * 60 * 24)));
     return Math.floor(diffDays / 7) + 1;
   };
@@ -1147,6 +1255,7 @@ export default function App() {
   // Hedef Ekleme / Düzenleme Yardımcıları
   const openNewGoalForm = () => {
     setEditingGoalId(null);
+    setGoalFormError('');
     setNewGoal({
       title: '',
       bestOutcome: '',
@@ -1157,13 +1266,14 @@ export default function App() {
       startValue: 0,
       currentValue: 0,
       targetValue: 300,
-      deadline: '2026-12-31'
+      deadline: getDefaultDeadlineString(21)
     });
     setShowAddGoal(true);
   };
 
   const handleEditGoalClick = (goal) => {
     setEditingGoalId(goal.id);
+    setGoalFormError('');
     const legacyFirst = (goal.obstacles && goal.obstacles.length > 0) ? goal.obstacles[0] : null;
     setNewGoal({
       title: goal.title || '',
@@ -1175,7 +1285,7 @@ export default function App() {
       startValue: goal.startValue ?? 0,
       currentValue: goal.currentValue ?? 0,
       targetValue: goal.targetValue ?? 100,
-      deadline: goal.deadline || '2026-12-31'
+      deadline: goal.deadline || getDefaultDeadlineString(21)
     });
     setShowAddGoal(true);
   };
@@ -1229,13 +1339,12 @@ export default function App() {
     const actualMinutes = Math.min(plannedMins, Math.round(elapsedTime / 60));
     const pausedSeconds = Math.max(0, totalElapsedTime - elapsedTime);
     const addedProgress = Math.max(0, Number(sessionProgressDelta) || 0);
-    const now = new Date();
     const newSession = {
       id: 's' + Date.now(),
       goalId: activeGoal.id,
       subject: sessionSubject,
-      date: getTodayDateString(),
-      startTime: now.toTimeString().slice(0, 5),
+      date: sessionStartDate || getTodayDateString(),
+      startTime: sessionStartTime || getCurrentTimeString(),
       plannedMin: plannedMins,
       actualMin: actualMinutes,
       activeSeconds: elapsedTime,
@@ -1293,33 +1402,44 @@ export default function App() {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t.groupLabel}</label>
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+                <span>{t.groupLabel}</span>
+                {isGroupLocked && <Lock className="w-3.5 h-3.5 text-slate-400" />}
+              </label>
               <div className="grid grid-cols-2 gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setStudyGroup('experiment')}
+                  disabled={isGroupLocked}
+                  onClick={() => !isGroupLocked && setStudyGroup('experiment')}
                   className={`py-3.5 px-3 rounded-xl font-extrabold text-xs sm:text-sm border-2 transition-all flex items-center justify-center gap-1.5 ${
                     studyGroup === 'experiment'
                       ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-100'
                       : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300'
-                  }`}
+                  } ${isGroupLocked ? 'cursor-not-allowed opacity-75' : ''}`}
                 >
                   {studyGroup === 'experiment' && <Check className="w-4 h-4 shrink-0" />}
                   <span>{t.groupExperimentLabel}</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setStudyGroup('control')}
+                  disabled={isGroupLocked}
+                  onClick={() => !isGroupLocked && setStudyGroup('control')}
                   className={`py-3.5 px-3 rounded-xl font-extrabold text-xs sm:text-sm border-2 transition-all flex items-center justify-center gap-1.5 ${
                     studyGroup === 'control'
                       ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-100'
                       : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-indigo-300'
-                  }`}
+                  } ${isGroupLocked ? 'cursor-not-allowed opacity-75' : ''}`}
                 >
                   {studyGroup === 'control' && <Check className="w-4 h-4 shrink-0" />}
                   <span>{t.groupControlLabel}</span>
                 </button>
               </div>
+              {isGroupLocked && (
+                <p className="text-[11px] font-medium text-slate-500 mt-1.5 flex items-center gap-1">
+                  <Lock className="w-3 h-3 shrink-0 text-slate-400" />
+                  <span>{t.groupLockedHint}</span>
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">{t.fieldLabel}</label>
@@ -1334,7 +1454,7 @@ export default function App() {
           </div>
 
           <button 
-            onClick={() => (userName.trim() !== '' && studyGroup !== '') && setOnboardingStep(1)}
+            onClick={() => (userName.trim() !== '' && studyGroup !== '') && setOnboardingStep(isGroupLocked ? 2 : 1)}
             disabled={!userName.trim() || !studyGroup}
             className={`w-full py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all ${
               userName.trim() && studyGroup
@@ -1612,16 +1732,49 @@ export default function App() {
               </>
             )}
 
+            {goalFormError && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
+                {goalFormError}
+              </div>
+            )}
+
             <button 
               onClick={() => {
-                if (!newGoal.title.trim()) return;
+                if (!newGoal.title.trim()) {
+                  setGoalFormError(t.errGoalTitle);
+                  return;
+                }
+                if (!newGoal.deadline) {
+                  setGoalFormError(t.errGoalDeadline);
+                  return;
+                }
+                if (Number(newGoal.targetValue) === Number(newGoal.startValue)) {
+                  setGoalFormError(t.errGoalTargetDiff);
+                  return;
+                }
+                if (!isControlGroup) {
+                  if (!newGoal.bestOutcome.trim()) {
+                    setGoalFormError(t.errGoalOutcome);
+                    return;
+                  }
+                  if (!newGoal.personalObstacle.trim()) {
+                    setGoalFormError(t.errGoalObstacle);
+                    return;
+                  }
+                  if (!newGoal.mainIf.trim() || !newGoal.mainThen.trim()) {
+                    setGoalFormError(t.errGoalMainPlan);
+                    return;
+                  }
+                }
+
+                setGoalFormError('');
                 const cleanedGoalData = {
                   ...newGoal,
                   title: newGoal.title.trim(),
-                  bestOutcome: newGoal.bestOutcome.trim(),
-                  personalObstacle: newGoal.personalObstacle.trim(),
-                  mainIf: newGoal.mainIf.trim(),
-                  mainThen: newGoal.mainThen.trim()
+                  bestOutcome: isControlGroup ? '' : newGoal.bestOutcome.trim(),
+                  personalObstacle: isControlGroup ? '' : newGoal.personalObstacle.trim(),
+                  mainIf: isControlGroup ? '' : newGoal.mainIf.trim(),
+                  mainThen: isControlGroup ? '' : newGoal.mainThen.trim()
                 };
 
                 if (editingGoalId) {
@@ -1644,7 +1797,7 @@ export default function App() {
 
                 setShowAddGoal(false);
                 setEditingGoalId(null);
-                setNewGoal({ title: '', bestOutcome: '', personalObstacle: '', mainIf: '', mainThen: '', metric: 'Soru', startValue: 0, currentValue: 0, targetValue: 300, deadline: '2026-12-31' });
+                setNewGoal({ title: '', bestOutcome: '', personalObstacle: '', mainIf: '', mainThen: '', metric: 'Soru', startValue: 0, currentValue: 0, targetValue: 300, deadline: getDefaultDeadlineString(21) });
               }} 
               className="w-full py-4 rounded-xl font-bold text-white bg-indigo-600 mt-2 shadow-lg shadow-indigo-200 hover:bg-indigo-700"
             >
@@ -1659,21 +1812,12 @@ export default function App() {
           </div>
           <h3 className="font-extrabold text-slate-800 text-base mb-1">{t.noGoalsTitle}</h3>
           <p className="text-xs text-slate-500 mb-6">{isControlGroup ? t.noGoalsDescControl : t.noGoalsDesc}</p>
-          <div className="flex flex-col sm:flex-row gap-2.5 justify-center">
+          <div className="flex justify-center">
             <button
               onClick={openNewGoalForm}
-              className="px-5 py-3 bg-indigo-600 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md shadow-indigo-100 hover:bg-indigo-700"
+              className="px-6 py-3.5 bg-indigo-600 text-white rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 shadow-md shadow-indigo-100 hover:bg-indigo-700"
             >
               <Plus className="w-4 h-4" /> {t.createGoalBtn}
-            </button>
-            <button
-              onClick={() => {
-                setGoals(INITIAL_GOALS);
-                setSessions(INITIAL_SESSIONS);
-              }}
-              className="px-4 py-3 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-slate-200"
-            >
-              <RotateCcw className="w-4 h-4" /> {t.restoreSampleBtn}
             </button>
           </div>
         </div>
@@ -1926,6 +2070,10 @@ export default function App() {
                   }
                   setUiMessage('');
                   resetSessionState();
+                  const startTimeNow = getCurrentTimeString();
+                  const startDateNow = getTodayDateString();
+                  setSessionStartTime(startTimeNow);
+                  setSessionStartDate(startDateNow);
                   setIsSessionActive(true);
                   setIsRunning(true);
                 }}
@@ -2224,13 +2372,16 @@ export default function App() {
   // --- GELİŞMİŞ RAPORLAR, HAFTALIK KARŞILAŞTIRMA VE EXCEL ÇIKTISI ---
   const getFilteredSessions = () => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
     return sessions.filter(s => {
       const goalMatch = selectedReportGoalId === 'all' || s.goalId === selectedReportGoalId;
       if (!goalMatch) return false;
 
       if (selectedTimeRange === 'all') return true;
-      const sessionDate = new Date(s.date);
-      const diffDays = Math.ceil((today - sessionDate) / (1000 * 60 * 60 * 24));
+      const sessionDate = parseLocalDate(s.date) || new Date(s.date);
+      if (!sessionDate || isNaN(sessionDate.getTime())) return true;
+      sessionDate.setHours(0, 0, 0, 0);
+      const diffDays = Math.floor((today - sessionDate) / (1000 * 60 * 60 * 24));
       if (selectedTimeRange === 'week') return diffDays <= 7;
       if (selectedTimeRange === 'month') return diffDays <= 30;
       return true;
@@ -2454,18 +2605,20 @@ export default function App() {
           </div>
         </div>
 
-        {/* AKILLI HAFTALIK KOÇ ÖNERİSİ KARTI */}
-        <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-5 rounded-3xl text-white shadow-lg shadow-indigo-200">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-5 h-5 text-amber-300" />
-            <h3 className="font-extrabold text-xs tracking-wider uppercase text-indigo-100">
-              {t.coachTitle}
-            </h3>
+        {/* AKILLI HAFTALIK KOÇ ÖNERİSİ KARTI (Sadece Deney Grubu / Grup A) */}
+        {!isControlGroup && (
+          <div className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-violet-800 p-5 rounded-3xl text-white shadow-lg shadow-indigo-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-5 h-5 text-amber-300" />
+              <h3 className="font-extrabold text-xs tracking-wider uppercase text-indigo-100">
+                {t.coachTitle}
+              </h3>
+            </div>
+            <p className="text-xs sm:text-sm font-medium leading-relaxed text-indigo-50">
+              {generateSmartCoachAdvice(filteredSessions, selectedGoalObj)}
+            </p>
           </div>
-          <p className="text-xs sm:text-sm font-medium leading-relaxed text-indigo-50">
-            {generateSmartCoachAdvice(filteredSessions, selectedGoalObj)}
-          </p>
-        </div>
+        )}
 
         {/* ANA ORAN KARTLARI (Kontrol: 3 Kart / Deney: 4 Kart) */}
         <div className={`grid gap-3 ${isControlGroup ? 'grid-cols-3' : 'grid-cols-2'}`}>
